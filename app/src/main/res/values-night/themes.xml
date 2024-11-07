@@ -1,6 +1,22 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.PyNiDE" parent="Theme.Material3.Dark">
+    <style name="Theme.PyNiDE.Start" parent="Theme.AppCompat.DayNight">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:actionBarStyle">@style/ActionBar.Transparent.PyNiDE.Start</item>
+        <item name="android:colorBackground">#1f2732</item>
+        <item name="android:windowBackground">#1f2732</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:colorPrimaryDark">#1c242e</item>
+        <item name="android:colorPrimary">#232d3a</item>
+        <item name="android:navigationBarColor">#000000</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+    </style>
 
+    <style name="ActionBar.Transparent.PyNiDE.Start" parent="android:style/Widget.Material.Light.ActionBar">
+        <item name="android:background">#ff232d3a</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:logo">@drawable/transparent</item>
+        <item name="android:title">""</item>
     </style>
 </resources>

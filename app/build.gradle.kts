@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
+@file:Suppress("UnstableApiUsage")
 
 plugins {
     alias(libs.plugins.application)
@@ -19,12 +19,14 @@ android {
 
     buildFeatures {
         buildConfig = true
+        viewBinding = false
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -53,14 +55,14 @@ android {
     }
 }
 
-configurations.all {
-    exclude(group = "androidx.recyclerview", module = "recyclerview")
+configurations.configureEach {
+    exclude("androidx.recyclerview", "recyclerview")
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(libs.core)
+    implementation(libs.appcompat)
+    implementation(libs.fragment)
 
-    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    coreLibraryDesugaring(libs.desugar)
 }

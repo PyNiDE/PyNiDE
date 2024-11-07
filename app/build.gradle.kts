@@ -8,13 +8,28 @@ plugins {
 android {
     namespace = "com.pynide"
     compileSdk = 34
+    ndkVersion = "26.2.11394342"
 
     defaultConfig {
         applicationId = "com.pynide"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
+
+        externalNativeBuild {
+            cmake {
+                arguments("-DANDROID_STL=c++_static")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildFeatures {

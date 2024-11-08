@@ -38,7 +38,7 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
             isShrinkResources = false
 
@@ -67,6 +67,7 @@ android {
         disable += "MissingTranslation"
         disable += "ExtraTranslation"
         disable += "BlockedPrivateApi"
+        disable += "SdCardPath"
     }
 }
 
@@ -78,6 +79,9 @@ dependencies {
     implementation(libs.core)
     implementation(libs.appcompat)
     implementation(libs.fragment)
+    implementation(libs.dynamicanimation)
+    implementation(libs.interpolator)
+    implementation(libs.splashscreen)
 
     coreLibraryDesugaring(libs.desugar)
 }

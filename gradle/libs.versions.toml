@@ -1,15 +1,22 @@
 [versions]
 agp = "8.5.2"
 kotlin = "1.9.0"
+#noinspection GradleDependency
 core = "1.13.0"
 appcompat = "1.7.0"
 fragment = "1.8.5"
+dynamicanimation = "1.0.0"
+interpolator = "1.0.0"
+splashscreen = "1.0.1"
 desugar = "2.1.3"
 
 [libraries]
 core = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+dynamicanimation = { module = "androidx.dynamicanimation:dynamicanimation", version.ref = "dynamicanimation" }
+interpolator = { module = "androidx.interpolator:interpolator", version.ref = "interpolator" }
+splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
 
 [plugins]

@@ -14,14 +14,14 @@ import android.os.Message;
 import android.os.Process;
 import android.os.SystemClock;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 public class DispatchQueue extends Thread {
-
     private static final int THREAD_PRIORITY_DEFAULT = -1000;
 
     private volatile Handler handler = null;
-    private CountDownLatch syncLatch = new CountDownLatch(1);
+    private final CountDownLatch syncLatch = new CountDownLatch(1);
     private long lastTaskTime;
     private static int indexPointer = 0;
     public final int index = indexPointer++;
@@ -64,18 +64,18 @@ public class DispatchQueue extends Thread {
             syncLatch.await();
             handler.removeCallbacks(runnable);
         } catch (Exception e) {
-            FileLog.e(e, false);
+            FileLog.e(e);
         }
     }
 
     public void cancelRunnables(Runnable[] runnables) {
         try {
             syncLatch.await();
-            for (int i = 0; i < runnables.length; i++) {
-                handler.removeCallbacks(runnables[i]);
+            for (Runnable runnable : runnables) {
+                handler.removeCallbacks(runnable);
             }
         } catch (Exception e) {
-            FileLog.e(e, false);
+            FileLog.e(e);
         }
     }
 
@@ -88,7 +88,7 @@ public class DispatchQueue extends Thread {
         try {
             syncLatch.await();
         } catch (Exception e) {
-            FileLog.e(e, false);
+            FileLog.e(e);
         }
         return handler.postAtFrontOfQueue(runnable);
     }
@@ -97,7 +97,7 @@ public class DispatchQueue extends Thread {
         try {
             syncLatch.await();
         } catch (Exception e) {
-            FileLog.e(e, false);
+            FileLog.e(e);
         }
         if (delay <= 0) {
             return handler.post(runnable);
@@ -111,7 +111,7 @@ public class DispatchQueue extends Thread {
             syncLatch.await();
             handler.removeCallbacksAndMessages(null);
         } catch (Exception e) {
-            FileLog.e(e, false);
+            FileLog.e(e);
         }
     }
 
@@ -130,7 +130,7 @@ public class DispatchQueue extends Thread {
     @Override
     public void run() {
         Looper.prepare();
-        handler = new Handler(Looper.myLooper(), msg -> {
+        handler = new Handler(Objects.requireNonNull(Looper.myLooper()), msg -> {
             DispatchQueue.this.handleMessage(msg);
             return true;
         });

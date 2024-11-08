@@ -2,14 +2,10 @@ package com.pynide.app;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
@@ -17,15 +13,12 @@ import androidx.annotation.NonNull;
 import java.io.File;
 
 public class ApplicationLoader extends Application {
-    public static ApplicationLoader applicationLoaderInstance;
-
     @SuppressLint("StaticFieldLeak")
     public static volatile Context applicationContext;
     public static volatile Handler applicationHandler;
     private static volatile boolean applicationInited = false;
 
     public static long startTime;
-    public static volatile boolean isScreenOn = false;
 
     public static File getFilesDirFixed() {
         for (int a = 0; a < 10; a++) {
@@ -57,25 +50,6 @@ public class ApplicationLoader extends Application {
             e.printStackTrace();
         }
 
-        try {
-            final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
-            filter.addAction(Intent.ACTION_SCREEN_OFF);
-            final BroadcastReceiver mReceiver = new ScreenReceiver();
-            applicationContext.registerReceiver(mReceiver, filter);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            PowerManager pm = (PowerManager) ApplicationLoader.applicationContext.getSystemService(Context.POWER_SERVICE);
-            isScreenOn = pm.isInteractive();
-            if (BuildVars.LOGS_ENABLED) {
-                FileLog.d("screen state = " + isScreenOn);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         SharedConfig.loadConfig();
         SharedPrefsHelper.init(applicationContext);
 
@@ -90,7 +64,6 @@ public class ApplicationLoader extends Application {
 
     @Override
     public void onCreate() {
-        applicationLoaderInstance = this;
         try {
             applicationContext = getApplicationContext();
         } catch (Throwable ignore) {

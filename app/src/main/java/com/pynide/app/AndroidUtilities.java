@@ -7,17 +7,19 @@ import java.io.File;
 
 public class AndroidUtilities {
     public static void checkDisplaySize(Context applicationContext, Configuration newConfig) {
+
     }
 
     public static void resetTabletFlag() {
 
     }
 
-    public static int dp(int i) {
+    public static int dp(float value) {
         return 0;
     }
 
-    public static void runOnUIThread(Runnable o) {
+    public static void runOnUIThread(Runnable runnable) {
+
     }
 
     public static File getLogsDir() {

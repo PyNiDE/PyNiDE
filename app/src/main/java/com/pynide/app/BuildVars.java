@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 
 import com.pynide.BuildConfig;
 
-@SuppressWarnings({"unused"})
 public class BuildVars {
     public static boolean DEBUG_VERSION = BuildConfig.DEBUG;
     public static boolean LOGS_ENABLED = BuildConfig.DEBUG;

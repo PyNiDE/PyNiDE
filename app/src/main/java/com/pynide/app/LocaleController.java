@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 public class LocaleController {
     private static volatile LocaleController Instance = null;
+
     public static LocaleController getInstance() {
         LocaleController localInstance = Instance;
         if (localInstance == null) {

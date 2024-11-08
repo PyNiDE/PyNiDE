@@ -7,6 +7,10 @@
     </style>
 
     <style name="Theme.PyNiDE" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#3F51B5</item>
+        <item name="colorPrimaryDark">#3949AB</item>
+        <item name="colorAccent">#3F51B5</item>
+        <item name="colorControlActivated">#808080</item>
         <item name="android:colorPrimary">#3F51B5</item>
         <item name="android:colorPrimaryDark">#3949AB</item>
         <item name="android:colorAccent">#3F51B5</item>
@@ -16,23 +20,21 @@
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/black</item>
-        <item name="colorPrimary">#3F51B5</item>
-        <item name="colorPrimaryDark">#3949AB</item>
-        <item name="colorAccent">#3F51B5</item>
-        <item name="colorControlActivated">#808080</item>
 
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBarOverlay">false</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBarOverlay">false</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBarOverlay">false</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges
         </item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
 
+        <item name="actionBarItemBackground">@drawable/bar_selector_style</item>
+        <item name="alertDialogTheme">@style/Theme.PyNiDE.Dialog.Alert</item>
         <item name="android:textViewStyle">@style/MyTextViewStyle</item>
         <item name="android:itemTextAppearance">@style/ActionBar.Transparent.PyNiDE.Item</item>
         <item name="android:listViewStyle">@style/Theme.PyNiDE.ListView</item>

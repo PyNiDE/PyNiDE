@@ -43,6 +43,7 @@ public class ApplicationLoader extends Application {
             return;
         }
         applicationInited = true;
+        NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
 
         try {
             LocaleController.getInstance();
@@ -77,6 +78,8 @@ public class ApplicationLoader extends Application {
         if (applicationContext == null) {
             applicationContext = getApplicationContext();
         }
+        NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
+
         applicationHandler = new Handler(applicationContext.getMainLooper());
     }
 

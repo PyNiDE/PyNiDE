@@ -19,7 +19,6 @@
 #include "vraster.h"
 #include <cstring>
 #include <memory>
-#include <tgnet/FileLog.h>
 #include "config.h"
 #include "v_ft_raster.h"
 #include "v_ft_stroker.h"

@@ -10,9 +10,12 @@ public class BuildVars {
     public static boolean LOGS_ENABLED = BuildConfig.DEBUG;
     public static String VERSION_NAME = BuildConfig.VERSION_NAME;
     public static int VERSION_CODE = BuildConfig.VERSION_CODE;
+    public static String PACKAGE_NAME = BuildConfig.APPLICATION_ID;
 
     static {
         if (ApplicationLoader.applicationContext != null) {
+            PACKAGE_NAME = ApplicationLoader.applicationContext.getPackageName();
+
             SharedPreferences sharedPreferences = ApplicationLoader.applicationContext.getSharedPreferences("systemConfig", Context.MODE_PRIVATE);
             LOGS_ENABLED = DEBUG_VERSION || sharedPreferences.getBoolean("logsEnabled", DEBUG_VERSION);
             if (LOGS_ENABLED) {

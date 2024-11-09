@@ -98,7 +98,7 @@ target_compile_options(pynide PUBLIC
         -ffast-math
         -fno-strict-aliasing
         -fno-math-errno)
-target_link_libraries(pynide PRIVATE
+target_link_libraries(pynide -Wl,--no-whole-archive
         rlottie
         jnigraphics
         log

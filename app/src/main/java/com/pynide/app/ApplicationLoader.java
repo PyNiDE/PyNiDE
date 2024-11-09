@@ -35,7 +35,7 @@ public class ApplicationLoader extends Application {
         } catch (Exception e) {
             FileLog.e(e);
         }
-        return new File("/data/data/org.telegram.messenger/files");
+        return new File("/data/data/com.pynide/files");
     }
 
     public static void postInitApplication() {
@@ -43,7 +43,7 @@ public class ApplicationLoader extends Application {
             return;
         }
         applicationInited = true;
-        NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
+        NativeLoader.initNativeLibs();
 
         try {
             LocaleController.getInstance();
@@ -52,7 +52,6 @@ public class ApplicationLoader extends Application {
         }
 
         SharedConfig.loadConfig();
-        SharedPrefsHelper.init(applicationContext);
 
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("app initied");
@@ -78,9 +77,12 @@ public class ApplicationLoader extends Application {
         if (applicationContext == null) {
             applicationContext = getApplicationContext();
         }
-        NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
-
         applicationHandler = new Handler(applicationContext.getMainLooper());
+
+        NativeLoader.initNativeLibs();
+        if (BuildVars.LOGS_ENABLED) {
+            FileLog.d("load libs time = " + (SystemClock.elapsedRealtime() - startTime));
+        }
     }
 
     @Override

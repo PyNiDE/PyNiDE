@@ -1,17 +1,10 @@
-/*
- * This is the source code of Telegram for Android v. 5.x.x.
- * It is licensed under GNU GPL v. 2 or later.
- * You should have received a copy of the license in this archive (see LICENSE).
- *
- * Copyright Nikolai Kudashov, 2013-2018.
- */
-
 package com.pynide.app;
 
 import android.util.Log;
 
-import com.pynide.app.time.FastDateFormat;
 import com.pynide.ui.LaunchActivity;
+
+import org.telegram.messanger.time.FastDateFormat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -201,9 +194,6 @@ public class FileLog {
                     getInstance().streamWriter.flush();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (AndroidUtilities.isENOSPC(e)) {
-                        LaunchActivity.checkFreeDiscSpaceStatic(1);
-                    }
                 }
             });
         }

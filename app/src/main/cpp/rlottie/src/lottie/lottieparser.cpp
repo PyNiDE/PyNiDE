@@ -55,7 +55,6 @@
 
 #include <array>
 #include <sstream>
-#include <tgnet/FileLog.h>
 
 #include "lottiemodel.h"
 #include "rapidjson/document.h"

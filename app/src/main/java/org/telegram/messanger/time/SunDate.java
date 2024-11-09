@@ -6,7 +6,7 @@
  * Copyright Nikolai Kudashov, 2013-2018.
  */
 
-package com.pynide.app.time;
+package org.telegram.messanger.time;
 
 import java.util.Calendar;
 import java.util.TimeZone;

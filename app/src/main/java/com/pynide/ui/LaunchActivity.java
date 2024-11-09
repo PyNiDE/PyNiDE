@@ -1,20 +1,13 @@
 package com.pynide.ui;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.os.Bundle;
-import android.view.Window;
 
 import androidx.annotation.Nullable;
 import androidx.core.splashscreen.SplashScreen;
 
-import com.pynide.R;
-
 @SuppressLint({"CustomSplashScreen"})
 public class LaunchActivity extends BasePermissionsActivity {
-    public static void checkFreeDiscSpaceStatic(int i) {
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);

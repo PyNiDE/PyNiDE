@@ -1,12 +1,10 @@
 package com.pynide.app;
 
-import android.content.Context;
-
 public class NativeLoader {
     private final static String LIB_NAME = "pynide";
     private static volatile boolean nativeLoaded = false;
 
-    public static synchronized void initNativeLibs(Context context) {
+    public static synchronized void initNativeLibs() {
         if (nativeLoaded) {
             return;
         }
@@ -14,14 +12,10 @@ public class NativeLoader {
             System.loadLibrary(LIB_NAME);
             nativeLoaded = true;
             if (BuildVars.LOGS_ENABLED) {
-                FileLog.d("loaded normal lib");
+                FileLog.d("loaded lib");
             }
         } catch (Error e) {
             FileLog.e(e);
         }
-    }
-
-    public static boolean loaded() {
-        return nativeLoaded;
     }
 }

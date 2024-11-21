@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Platform.V27.Theme.PyNiDE" parent="Platform.V24.Theme.PyNiDE">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightNavigationBar">?isLightTheme</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+    <style name="Platform.Theme.PyNiDE" parent="Platform.V27.Theme.PyNiDE" />
+</resources>

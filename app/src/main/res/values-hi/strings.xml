@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="python_ide">पायथन IDE</string>
+    <string name="terminal">टर्मिनल</string>
+    <string name="settings">सेटिंग्स</string>
+
+    <string name="application">एप्लिकेशन</string>
+    <string name="application_summary">थीम, ब्लैक थीम, गतिशील रंग, भाषा</string>
+</resources>

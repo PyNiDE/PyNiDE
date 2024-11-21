@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.preference.Preference
+        app:fragment="com.pynide.ui.settings.ApplicationFragment"
+        app:icon="@drawable/ic_android"
+        app:summary="@string/application_summary"
+        app:title="@string/application" />
+</androidx.preference.PreferenceScreen>

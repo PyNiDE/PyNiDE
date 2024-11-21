@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ThemeOverlay.PyNiDE.DynamicColors.Light" parent="ThemeOverlay.Material3.DynamicColors.Light" />
+
+    <style name="ThemeOverlay.PyNiDE.DynamicColors.Dark" parent="ThemeOverlay.Material3.DynamicColors.Dark" />
+</resources>

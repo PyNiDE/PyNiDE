@@ -1,0 +1,41 @@
+[versions]
+agp = "8.5.2"
+kotlin = "1.9.0"
+themebuilder = "1.4.1"
+autoresconfig = "1.2.1"
+#noinspection GradleDependency
+core = "1.13.0"
+appcompat = "1.7.0"
+material = "1.12.0"
+fragmentKtx = "1.8.5"
+constraintlayout = "2.2.0"
+preferenceKtx = "1.2.1"
+activityKtx = "1.9.3"
+splashscreen = "1.0.1"
+rikkaxLayoutInflater = "1.3.0"
+rikkaxInsets = "1.3.0"
+utilcodex = "1.31.1"
+eventbus = "3.3.1"
+desugar = "2.1.3"
+
+[libraries]
+core = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
+activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
+rikkax-layoutInflater = { group = "dev.rikka.rikkax.layoutinflater", name = "layoutinflater", version.ref = "rikkaxLayoutInflater" }
+rikkax-insets = { group = "dev.rikka.rikkax.insets", name = "insets", version.ref = "rikkaxInsets" }
+utilcodex = { group = "com.blankj", name = "utilcodex", version.ref = "utilcodex" }
+eventbus = { group = "org.greenrobot", name = "eventbus", version.ref = "eventbus" }
+desugar = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugar" }
+
+[plugins]
+application = { id = "com.android.application", version.ref = "agp" }
+kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+themebuilder = { id = "dev.rikka.tools.materialthemebuilder", version.ref = "themebuilder" }
+autoresconfig = { id = "dev.rikka.tools.autoresconfig", version.ref = "autoresconfig" }
+

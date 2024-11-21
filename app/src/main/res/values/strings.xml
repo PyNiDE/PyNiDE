@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="python_ide">Python IDE</string>
+    <string name="terminal">Terminal</string>
+    <string name="settings">Settings</string>
+
+    <string name="application">Application</string>
+    <string name="application_summary">Theme, Black Theme, Dynamic Colors, Language</string>
+</resources>

@@ -9,7 +9,7 @@ import com.blankj.utilcode.util.Utils
 import com.pynide.utils.FileLog
 import com.pynide.utils.LocaleDelegate
 
-class IDEApp : Application() {
+class IDEApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Utils.init(this)

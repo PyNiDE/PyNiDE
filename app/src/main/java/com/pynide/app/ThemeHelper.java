@@ -9,7 +9,7 @@ import com.pynide.IDESettings;
 import com.pynide.R;
 import com.pynide.utils.AndroidUtilities;
 
-public class ThemeSettings {
+public class ThemeHelper {
     private static final String THEME_DEFAULT = "DEFAULT";
     private static final String THEME_BLACK = "BLACK";
 

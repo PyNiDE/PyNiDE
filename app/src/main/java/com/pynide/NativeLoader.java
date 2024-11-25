@@ -22,13 +22,6 @@ public class NativeLoader {
     }
 
     public static String[] getLibNames() {
-        return getLibNames(true);
-    }
-
-    public static String[] getLibNames(boolean withPrefixAndSuffix) {
-        if (withPrefixAndSuffix) {
-            return (String[]) Arrays.stream(LIB_NAMES).map(libName -> String.format("lib%s.so", libName)).toArray();
-        }
-        return LIB_NAMES;
+        return (String[]) Arrays.stream(LIB_NAMES).map(libName -> String.format("lib%s.so", libName)).toArray();
     }
 }

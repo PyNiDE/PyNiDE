@@ -10,11 +10,13 @@ import java.io.File;
 
 public class AndroidUtilities {
     public static boolean isNightMode(Configuration configuration) {
+        if (configuration == null) return false;
         var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
     }
 
     public static boolean isNightMode(Context context) {
+        if (context == null) return false;
         var configuration = context.getResources().getConfiguration();
         return isNightMode(configuration);
     }

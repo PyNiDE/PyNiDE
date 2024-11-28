@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="night_mode">
+        <item>@string/follow_system</item>
+        <item>@string/day</item>
+        <item>@string/night</item>
+    </string-array>
+
+    <integer-array name="night_mode_value">
+        <item>-1</item>
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+</resources>

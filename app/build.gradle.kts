@@ -107,6 +107,8 @@ dependencies {
 
     implementation(libs.rikkax.insets)
     implementation(libs.rikkax.layoutInflater)
+    implementation(libs.rikkax.borderview)
+    implementation(libs.rikkax.simplemenu.preference)
 
     implementation(libs.utilcodex)
     implementation(libs.eventbus)

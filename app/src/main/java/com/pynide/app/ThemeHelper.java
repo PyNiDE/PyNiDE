@@ -15,14 +15,14 @@ public class ThemeHelper {
 
     public static final String KEY_LIGHT_THEME = "light_theme";
     public static final String KEY_BLACK_NIGHT_THEME = "black_night_theme";
-    public static final String KEY_USE_DYNAMIC_COLORS = "use_dynamic_colors";
+    public static final String KEY_DYNAMIC_COLORS = "dynamic_colors";
 
     public static boolean isBlackNightTheme() {
         return IDESettings.getPreferences().getBoolean(KEY_BLACK_NIGHT_THEME, false);
     }
 
-    public static boolean isUsingDynamicColors() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && IDESettings.getPreferences().getBoolean(KEY_USE_DYNAMIC_COLORS, true);
+    public static boolean isDynamicColors() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && IDESettings.getPreferences().getBoolean(KEY_DYNAMIC_COLORS, true);
     }
 
     public static String getTheme(Context context) {

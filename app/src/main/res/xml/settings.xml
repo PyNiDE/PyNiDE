@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-    <androidx.preference.Preference
-        app:fragment="com.pynide.ui.settings.ApplicationFragment"
-        app:summary="@string/application_summary"
-        app:title="@string/application" />
-</androidx.preference.PreferenceScreen>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        app:key="application"
+        app:title="@string/application">
+
+        <com.pynide.ui.settings.IntegerSimpleMenuPreference
+            android:entries="@array/night_mode"
+            android:entryValues="@array/night_mode_value"
+            android:key="night_mode"
+            android:summary="%s"
+            android:title="@string/theme" />
+
+        <SwitchPreference
+            android:key="black_night_theme"
+            android:summary="@string/settings_black_night_theme_summary"
+            android:title="@string/settings_black_night_theme" />
+
+        <SwitchPreference
+            android:key="dynamic_colors"
+            android:title="@string/settings_use_system_color" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:defaultValue="SYSTEM"
+            android:key="language"
+            android:summary="%s"
+            android:title="@string/settings_language" />
+    </PreferenceCategory>
+</PreferenceScreen>

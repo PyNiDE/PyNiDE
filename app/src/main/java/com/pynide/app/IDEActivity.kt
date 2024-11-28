@@ -6,11 +6,11 @@ import com.pynide.R
 
 open class IDEActivity : MaterialActivity() {
     override fun computeUserThemeKey(): String {
-        return ThemeHelper.getTheme(this) + ThemeHelper.isUsingDynamicColors()
+        return ThemeHelper.getTheme(this) + ThemeHelper.isDynamicColors()
     }
 
     override fun onApplyUserThemeResource(theme: Resources.Theme?, isDecorView: Boolean) {
-        if (ThemeHelper.isUsingDynamicColors()) {
+        if (ThemeHelper.isDynamicColors()) {
             theme?.applyStyle(R.style.ThemeOverlay_PyNiDE_DynamicColors, true)
         }
         theme?.applyStyle(ThemeHelper.getThemeStyleRes(this), true)

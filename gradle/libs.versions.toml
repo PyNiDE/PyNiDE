@@ -14,6 +14,8 @@ activityKtx = "1.9.3"
 splashscreen = "1.0.1"
 rikkaxLayoutInflater = "1.3.0"
 rikkaxInsets = "1.3.0"
+rikkaxBorderview = "1.1.0"
+rikkaxSimplemenuPreference = "1.0.3"
 utilcodex = "1.31.1"
 eventbus = "3.3.1"
 desugar = "2.1.3"
@@ -29,6 +31,8 @@ activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref
 splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 rikkax-layoutInflater = { group = "dev.rikka.rikkax.layoutinflater", name = "layoutinflater", version.ref = "rikkaxLayoutInflater" }
 rikkax-insets = { group = "dev.rikka.rikkax.insets", name = "insets", version.ref = "rikkaxInsets" }
+rikkax-borderview = { module = "dev.rikka.rikkax.widget:borderview", version.ref = "rikkaxBorderview" }
+rikkax-simplemenu-preference = { module = "dev.rikka.rikkax.preference:simplemenu-preference", version.ref = "rikkaxSimplemenuPreference" }
 utilcodex = { group = "com.blankj", name = "utilcodex", version.ref = "utilcodex" }
 eventbus = { group = "org.greenrobot", name = "eventbus", version.ref = "eventbus" }
 desugar = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugar" }

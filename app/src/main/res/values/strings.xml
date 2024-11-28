@@ -3,7 +3,14 @@
     <string name="python_ide">Python IDE</string>
     <string name="terminal">Terminal</string>
     <string name="settings">Settings</string>
-
     <string name="application">Application</string>
-    <string name="application_summary">Theme, Black Theme, Dynamic Colors, Language</string>
+    <string name="theme">Theme</string>
+    <string name="follow_system">Follow System</string>
+    <string name="day">Day</string>
+    <string name="night">Night</string>
+
+    <string name="settings_language">Language</string>
+    <string name="settings_black_night_theme">Black night theme</string>
+    <string name="settings_black_night_theme_summary">Use the pure black theme if night mode is enabled</string>
+    <string name="settings_use_system_color">Use system theme color</string>
 </resources>

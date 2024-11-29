@@ -8,9 +8,9 @@
     <string name="follow_system">Follow System</string>
     <string name="day">Day</string>
     <string name="night">Night</string>
-
-    <string name="settings_language">Language</string>
-    <string name="settings_black_night_theme">Black night theme</string>
-    <string name="settings_black_night_theme_summary">Use the pure black theme if night mode is enabled</string>
-    <string name="settings_use_system_color">Use system theme color</string>
+    <string name="black_night_theme">Black night theme</string>
+    <string name="black_night_theme_summary">Use the pure black theme if night mode is enabled</string>
+    <string name="dynamic_colors">Dynamic colors</string>
+    <string name="dynamic_colors_summary">Use the system wallpaper colors</string>
+    <string name="language">Language</string>
 </resources>

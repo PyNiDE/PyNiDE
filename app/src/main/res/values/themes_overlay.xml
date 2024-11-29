@@ -4,8 +4,6 @@
     <style name="ThemeOverlay.PyNiDE.Normal" parent="" />
 
     <style name="ThemeOverlay.PyNiDE.Black" parent="">
-        <item name="colorPrimary">@android:color/black</item>
-        <item name="colorPrimaryDark">@android:color/black</item>
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>
         <item name="colorSurface">@android:color/black</item>

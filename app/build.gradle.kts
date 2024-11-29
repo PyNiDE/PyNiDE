@@ -89,7 +89,7 @@ materialThemeBuilder {
 }
 
 autoResConfig {
-    generatedClassFullName = "com.pynide.app.IDELocales"
+    generatedClassFullName = "com.pynide.IDELocales"
     generateRes = false
     generatedArrayFirstItem = "SYSTEM"
     generateLocaleConfig = true
@@ -107,8 +107,10 @@ dependencies {
 
     implementation(libs.rikkax.insets)
     implementation(libs.rikkax.layoutInflater)
-    implementation(libs.rikkax.borderview)
     implementation(libs.rikkax.simplemenu.preference)
+    implementation(libs.rikkax.material.preference) {
+        exclude("dev.rikka.rikkax.appcompat", "appcompat")
+    }
 
     implementation(libs.utilcodex)
     implementation(libs.eventbus)

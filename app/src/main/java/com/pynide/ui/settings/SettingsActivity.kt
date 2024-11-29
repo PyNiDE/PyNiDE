@@ -1,5 +1,6 @@
 package com.pynide.ui.settings
 
+import android.content.res.Resources
 import android.os.Bundle
 
 import androidx.activity.enableEdgeToEdge
@@ -19,16 +20,18 @@ class SettingsActivity : IDEActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        with(supportActionBar) {
-            this?.setDisplayShowHomeEnabled(true)
-            this?.setDisplayHomeAsUpEnabled(true)
-        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         if (savedInstanceState == null) {
-            supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.settings_container, SettingsFragment())
-                .commit()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.settings_container, SettingsFragment()).commit()
         }
+    }
+
+    override fun onApplyUserThemeResource(theme: Resources.Theme?, isDecorView: Boolean) {
+        super.onApplyUserThemeResource(theme, isDecorView)
+        theme?.applyStyle(
+            rikka.material.preference.R.style.ThemeOverlay_Rikka_Material3_Preference, true
+        )
     }
 }

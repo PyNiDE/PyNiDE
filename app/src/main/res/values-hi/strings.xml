@@ -8,4 +8,9 @@
     <string name="follow_system">सिस्टम का पालन करें</string>
     <string name="day">दिन</string>
     <string name="night">रात</string>
+    <string name="black_night_theme">काली रात थीम</string>
+    <string name="black_night_theme_summary">यदि रात्रि मोड सक्षम है तो शुद्ध काली थीम का उपयोग करें</string>
+    <string name="dynamic_colors">गतिशील रंग</string>
+    <string name="dynamic_colors_summary">सिस्टम वॉलपेपर रंगों का उपयोग करें</string>
+    <string name="language">भाषा</string>
 </resources>

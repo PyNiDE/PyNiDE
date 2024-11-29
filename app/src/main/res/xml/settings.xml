@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         app:key="application"
         app:title="@string/application">
 
         <com.pynide.ui.settings.IntegerSimpleMenuPreference
-            android:entries="@array/night_mode"
-            android:entryValues="@array/night_mode_value"
-            android:key="night_mode"
-            android:summary="%s"
-            android:title="@string/theme" />
+            app:entries="@array/night_mode"
+            app:entryValues="@array/night_mode_value"
+            app:icon="@drawable/ic_format_paint"
+            app:key="night_mode"
+            app:summary="%s"
+            app:title="@string/theme" />
 
-        <SwitchPreference
-            android:key="black_night_theme"
-            android:summary="@string/settings_black_night_theme_summary"
-            android:title="@string/settings_black_night_theme" />
+        <rikka.material.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_invert_colors"
+            app:key="black_night_theme"
+            app:summary="@string/black_night_theme_summary"
+            app:title="@string/black_night_theme" />
 
-        <SwitchPreference
-            android:key="dynamic_colors"
-            android:title="@string/settings_use_system_color" />
+        <rikka.material.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_palette"
+            app:key="dynamic_colors"
+            app:summary="@string/dynamic_colors_summary"
+            app:title="@string/dynamic_colors" />
 
         <rikka.preference.SimpleMenuPreference
-            android:defaultValue="SYSTEM"
-            android:key="language"
-            android:summary="%s"
-            android:title="@string/settings_language" />
+            app:defaultValue="SYSTEM"
+            app:icon="@drawable/ic_language"
+            app:key="language"
+            app:summary="%s"
+            app:title="@string/language" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -14,4 +14,19 @@
         <item name="android:popupTheme">@style/ThemeOverlay.PyNiDE.SimpleMenuPreference.PopupMenu
         </item>
     </style>
+
+    <style name="Widget.PyNiDE.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.PyNiDE.TitleLarge</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.PyNiDE.TitleMedium</item>
+    </style>
+
+    <style name="TextAppearance.PyNiDE.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/opensans_semibold</item>
+        <item name="fontFamily">@font/opensans_semibold</item>
+    </style>
+
+    <style name="TextAppearance.PyNiDE.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">@font/opensans_semibold</item>
+        <item name="fontFamily">@font/opensans_semibold</item>
+    </style>
 </resources>

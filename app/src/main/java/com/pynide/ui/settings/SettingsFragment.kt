@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.view.LayoutInflater
+import android.view.ViewGroup
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -12,6 +14,9 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.TwoStatePreference
+import androidx.recyclerview.widget.RecyclerView
+
+import com.blankj.utilcode.util.SizeUtils
 
 import com.pynide.IDELocales
 import com.pynide.IDESettings
@@ -98,6 +103,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
         setupLocalePreference()
+    }
+
+    override fun onCreateRecyclerView(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        savedInstanceState: Bundle?
+    ): RecyclerView {
+        val recyclerView = super.onCreateRecyclerView(inflater, parent, savedInstanceState)
+        recyclerView.clipToPadding = false
+        recyclerView.setPadding(0, 0, 0, SizeUtils.dp2px(8f))
+        return recyclerView
     }
 
     private fun setupLocalePreference() {

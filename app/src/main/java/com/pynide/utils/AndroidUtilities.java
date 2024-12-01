@@ -2,13 +2,33 @@ package com.pynide.utils;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Environment;
+import android.view.Menu;
 
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.view.menu.MenuItemImpl;
+
+import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.Utils;
 
 import java.io.File;
 
 public class AndroidUtilities {
+    public static void setOptionalMenuIcons(Menu menu, boolean visible) {
+        if (menu == null) return;
+        if (menu instanceof MenuBuilder) setOptionalMenuIcons((MenuBuilder) menu, visible);
+    }
+
+    public static void setOptionalMenuIcons(MenuBuilder menuBuilder, boolean visible) {
+        menuBuilder.setOptionalIconsVisible(visible);
+        for (MenuItemImpl item : menuBuilder.getVisibleItems()) {
+            if (item.getIcon() != null) {
+                item.setIcon(new InsetDrawable(item.getIcon(), SizeUtils.dp2px(8f), 0, SizeUtils.dp2px(8f), 0));
+            }
+        }
+    }
+
     public static boolean isNightMode(Configuration configuration) {
         if (configuration == null) return false;
         var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;

@@ -13,6 +13,7 @@ import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityLaunchBinding
 import com.pynide.ui.settings.SettingsActivity
 import com.pynide.ui.terminal.TerminalActivity
+import com.pynide.utils.AndroidUtilities
 
 @Suppress("CustomSplashScreen")
 class LaunchActivity : IDEActivity() {
@@ -32,6 +33,7 @@ class LaunchActivity : IDEActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_launch, menu)
+        AndroidUtilities.setOptionalMenuIcons(menu, true)
         return super.onCreateOptionsMenu(menu)
     }
 

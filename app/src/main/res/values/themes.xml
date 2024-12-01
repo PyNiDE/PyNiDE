@@ -27,6 +27,7 @@
     <style name="Theme.PyNiDE" parent="Platform.Theme.PyNiDE">
         <item name="android:fontFamily">@font/opensans_medium</item>
         <item name="fontFamily">@font/opensans_medium</item>
+        <item name="toolbarStyle">@style/Widget.PyNiDE.Toolbar</item>
     </style>
 
     <style name="Theme.PyNiDE.Starting" parent="Theme.SplashScreen">

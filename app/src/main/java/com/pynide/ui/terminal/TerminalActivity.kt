@@ -19,10 +19,7 @@ class TerminalActivity : IDEActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        with(supportActionBar) {
-            this?.setDisplayShowHomeEnabled(true)
-            this?.setDisplayHomeAsUpEnabled(true)
-        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         binding.progressBar.isVisible = true
     }

@@ -14,4 +14,10 @@
     <style name="ThemeOverlay.PyNiDE.DynamicColors.Dark" parent="ThemeOverlay.Material3.DynamicColors.Dark" />
 
     <style name="ThemeOverlay.PyNiDE.DynamicColors" parent="ThemeOverlay.PyNiDE.DynamicColors.Light" />
+
+    <style name="ThemeOverlay.PyNiDE.Preference" parent="ThemeOverlay.Rikka.Material3.Preference">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.PyNiDE</item>
+    </style>
+
+    <style name="ThemeOverlay.PyNiDE.SimpleMenuPreference.PopupMenu" parent="ThemeOverlay.Preference.SimpleMenuPreference.PopupMenu" />
 </resources>

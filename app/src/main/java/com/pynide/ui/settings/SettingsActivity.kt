@@ -30,8 +30,6 @@ class SettingsActivity : IDEActivity() {
 
     override fun onApplyUserThemeResource(theme: Resources.Theme?, isDecorView: Boolean) {
         super.onApplyUserThemeResource(theme, isDecorView)
-        theme?.applyStyle(
-            rikka.material.preference.R.style.ThemeOverlay_Rikka_Material3_Preference, true
-        )
+        theme?.applyStyle(R.style.ThemeOverlay_PyNiDE_Preference, true)
     }
 }

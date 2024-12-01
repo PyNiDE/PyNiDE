@@ -14,7 +14,7 @@ class IDEApplication : Application() {
         super.onCreate()
         Utils.init(this)
         NativeLoader.initNativeLibs()
-        IDESettings.init(this)
+        IDESettings.initialize(this)
 
         LocaleDelegate.defaultLocale = IDESettings.getLocale()
         AppCompatDelegate.setDefaultNightMode(IDESettings.getNightMode())

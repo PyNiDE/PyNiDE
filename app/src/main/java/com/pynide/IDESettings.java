@@ -39,7 +39,7 @@ public class IDESettings {
         return storageContext;
     }
 
-    public static void init(Context context) {
+    public static void initialize(Context context) {
         if (sPreferences == null) {
             sPreferences = getSettingsStorageContext(context)
                     .getSharedPreferences(NAME, Context.MODE_PRIVATE);

@@ -23,7 +23,7 @@ public class AndroidUtilities {
     public static void setOptionalMenuIcons(MenuBuilder menuBuilder, boolean visible) {
         menuBuilder.setOptionalIconsVisible(visible);
         for (MenuItemImpl item : menuBuilder.getVisibleItems()) {
-            if (item.getIcon() != null) {
+            if (item.getIcon() != null && item.requiresOverflow()) {
                 item.setIcon(new InsetDrawable(item.getIcon(), SizeUtils.dp2px(8f), 0, SizeUtils.dp2px(8f), 0));
             }
         }

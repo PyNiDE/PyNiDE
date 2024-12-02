@@ -13,5 +13,8 @@
     <string name="dynamic_colors">गतिशील रंग</string>
     <string name="dynamic_colors_summary">सिस्टम वॉलपेपर रंगों का उपयोग करें</string>
     <string name="language">भाषा</string>
-    <string name="interpreter">दुभाषिया</string>
+    <string name="interpreter">इन्‍टरप्रेटर</string>
+    <string name="close">बंद करें</string>
+    <string name="reset">रीसेट करें</string>
+    <string name="share_transcript">प्रतिलेख साझा करें</string>
 </resources>

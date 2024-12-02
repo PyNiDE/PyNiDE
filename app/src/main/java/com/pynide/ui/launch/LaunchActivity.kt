@@ -1,6 +1,5 @@
 package com.pynide.ui.launch
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -32,15 +31,16 @@ class LaunchActivity : IDEActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_launch, menu)
-        AndroidUtilities.setOptionalMenuIcons(menu, true)
+        menuInflater.inflate(R.menu.launch, menu)
+        AndroidUtilities.setOptionalIcons(menu, true)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_terminal -> startActivity(Intent(this, TerminalActivity::class.java))
-            R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.action_terminal -> startActivity(TerminalActivity.newIntent(this, true))
+            R.id.action_settings -> startActivity(SettingsActivity.newIntent(this))
+            R.id.action_interpreter -> startActivity(TerminalActivity.newIntent(this, false))
         }
         return super.onOptionsItemSelected(item)
     }

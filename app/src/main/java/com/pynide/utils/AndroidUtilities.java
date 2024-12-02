@@ -1,5 +1,6 @@
 package com.pynide.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.InsetDrawable;
@@ -15,12 +16,14 @@ import com.blankj.utilcode.util.Utils;
 import java.io.File;
 
 public class AndroidUtilities {
-    public static void setOptionalMenuIcons(Menu menu, boolean visible) {
+    @SuppressLint("RestrictedApi")
+    public static void setOptionalIcons(Menu menu, boolean visible) {
         if (menu == null) return;
-        if (menu instanceof MenuBuilder) setOptionalMenuIcons((MenuBuilder) menu, visible);
+        if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible);
     }
 
-    public static void setOptionalMenuIcons(MenuBuilder menuBuilder, boolean visible) {
+    @SuppressLint("RestrictedApi")
+    public static void setOptionalIcons(MenuBuilder menuBuilder, boolean visible) {
         menuBuilder.setOptionalIconsVisible(visible);
         for (MenuItemImpl item : menuBuilder.getVisibleItems()) {
             if (item.getIcon() != null && item.requiresOverflow()) {
@@ -29,16 +32,16 @@ public class AndroidUtilities {
         }
     }
 
-    public static boolean isNightMode(Configuration configuration) {
-        if (configuration == null) return false;
-        var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
-    }
-
     public static boolean isNightMode(Context context) {
         if (context == null) return false;
         var configuration = context.getResources().getConfiguration();
         return isNightMode(configuration);
+    }
+
+    public static boolean isNightMode(Configuration configuration) {
+        if (configuration == null) return false;
+        var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
     }
 
     public static File getLogsDir() {

@@ -14,4 +14,7 @@
     <string name="dynamic_colors_summary">Use the system wallpaper colors</string>
     <string name="language">Language</string>
     <string name="interpreter">Interpreter</string>
+    <string name="close">Close</string>
+    <string name="reset">Reset</string>
+    <string name="share_transcript">Share transcript</string>
 </resources>

@@ -65,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             blackNightThemePreference.isChecked = ThemeHelper.isBlackNightTheme()
             blackNightThemePreference.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, _ ->
-                    if (AndroidUtilities.isNightMode(context?.resources?.configuration)) {
+                    if (AndroidUtilities.isNightMode(context)) {
                         ActivityCompat.recreate(requireActivity())
                     }
                     true

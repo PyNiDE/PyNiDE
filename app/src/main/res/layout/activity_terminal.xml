@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     android:fitsSystemWindows="true"
     tools:context=".ui.terminal.TerminalActivity">
 
@@ -31,6 +30,7 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <LinearLayout
+        android:id="@+id/terminal_root_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
@@ -47,6 +47,7 @@
             android:layout_marginEnd="3dp"
             android:defaultFocusHighlightEnabled="false"
             android:fastScrollEnabled="false"
+            android:focusable="true"
             android:focusableInTouchMode="true"
             android:overScrollMode="never"
             android:scrollbars="none"

@@ -9,28 +9,27 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.WindowCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-
 import com.blankj.utilcode.util.ClipboardUtils
-
 import com.google.android.material.color.MaterialColors
-
 import com.pynide.R
 import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.TerminalHelper
+import com.pynide.terminal.TerminalVars
 import com.pynide.utils.AndroidUtilities
-
-import com.termux.terminal.TerminalColors
+import com.termux.terminal.TerminalColors.COLOR_SCHEME
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
+import com.termux.terminal.TextStyle
 import com.termux.view.TerminalViewClient
+import java.util.Properties
 
 class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClient {
     private lateinit var binding: ActivityTerminalBinding
@@ -43,7 +42,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        isTerminal = intent.getBooleanExtra(KEY_TERMINAL, true)
+        isTerminal = intent.getBooleanExtra(KEY_IS_TERMINAL, true)
 
         binding = ActivityTerminalBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -67,6 +66,15 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
         setupTerminalView()
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.terminalRootView) { _, insets ->
+            val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+            AndroidUtilities.toggleActionBar(supportActionBar, !imeVisible)
+            insets
+        }
+
+        terminalView.attachSession(createSession())
+        updateBackgroundColors()
+
         progressBar.isVisible = false
     }
 
@@ -83,8 +91,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         val emulator = currentSession?.emulator ?: return
         if (!emulator.isMouseTrackingActive && e?.isFromSource(InputDevice.SOURCE_MOUSE) == false) {
             terminalView.requestFocus()
-            WindowCompat.getInsetsController(window, terminalView)
-                .show(WindowInsetsCompat.Type.ime())
+            AndroidUtilities.toggleIme(window, terminalView, true)
         }
     }
 
@@ -97,7 +104,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun isTerminalViewSelected(): Boolean {
-        return true
+        return terminalView.hasFocus()
     }
 
     override fun copyModeChanged(copyMode: Boolean) {
@@ -163,9 +170,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
-        val text2 = text?.trim()
-        if (text2.isNullOrEmpty()) return
-        ClipboardUtils.copyText(text2)
+        if (text?.trim().isNullOrEmpty()) return
+        ClipboardUtils.copyText(text?.trim())
     }
 
     override fun onPasteTextFromClipboard(session: TerminalSession?) {
@@ -180,7 +186,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onColorsChanged(session: TerminalSession) {
-
+        updateBackgroundColors()
     }
 
     override fun onTerminalCursorStateChange(state: Boolean) {
@@ -197,23 +203,17 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         when (item.itemId) {
             R.id.action_reset -> onReset()
             R.id.action_share_transcript -> onShareTranscript()
+            R.id.action_paste -> onPaste()
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun createSession(): TerminalSession {
-        val workingDirectory = filesDir.absolutePath
-        val tempDirectory = cacheDir.absolutePath
-
-        val environmentVars = arrayOfNulls<String>(2)
-        environmentVars[0] = "HOME=$workingDirectory"
-        environmentVars[1] = "TMPDIR=$tempDirectory"
-
         val newSession = TerminalSession(
-            "/system/bin/sh",
-            workingDirectory,
+            TerminalVars.SHELL,
+            TerminalVars.HOME,
             arrayOf<String>(),
-            environmentVars,
+            TerminalHelper.createEnvironmentVarsArray(),
             TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
             this
         )
@@ -221,69 +221,82 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         return newSession
     }
 
+    private fun updateBackgroundColors() {
+        val decorView = window.decorView
+        val emulatorColors = currentSession?.emulator?.mColors ?: return
+        val backgroundColor = emulatorColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
+        decorView.setBackgroundColor(backgroundColor)
+        decorView.findViewById<View>(android.R.id.content).setBackgroundColor(backgroundColor)
+        binding.root.setBackgroundColor(backgroundColor)
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     private fun updateTerminalColors() {
-        val decorView = window.decorView
-        val backgroundColor =
-            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorSurface)
-        val foregroundColor =
-            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
-        val cursorColor =
-            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
-        val otherColor =
-            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
+        Properties().apply {
+            assets.open(TerminalHelper.COLOR_NAME).use {
+                load(it)
+            }
 
-        val colorMap = mutableMapOf<Int, Int>()
-        repeat(15) {
-            colorMap[it] = otherColor
-        }
+            val decorView = window.decorView
+            MaterialColors.getColor(
+                decorView, com.google.android.material.R.attr.colorSurface
+            ).also { color ->
+                put("background", "#" + color.toHexString().substring(2))
+            }
 
-        TerminalColors.COLOR_SCHEME.updateWith(
-            "#" + foregroundColor.toHexString().substring(2),
-            "#" + backgroundColor.toHexString().substring(2),
-            "#" + cursorColor.toHexString().substring(2),
-            colorMap.mapValues { "#" + it.value.toHexString().substring(2) }
-        )
+            MaterialColors.getColor(
+                decorView, com.google.android.material.R.attr.colorOnSurface
+            ).also { color ->
+                put("foreground", "#" + color.toHexString().substring(2))
+            }
 
-        val emulator = currentSession?.emulator ?: return
-        emulator.mColors.reset()
+            MaterialColors.getColor(
+                decorView, com.google.android.material.R.attr.colorOnSurface
+            ).also { color ->
+                put("cursor", "#" + color.toHexString().substring(2))
+            }
+
+            MaterialColors.getColor(
+                decorView, com.google.android.material.R.attr.colorOnSurface
+            ).also { color ->
+                repeat(15) {
+                    put("color$it", "#" + color.toHexString().substring(2))
+                }
+            }
+        }.also(COLOR_SCHEME::updateWith)
+
+        val emulatorColors = currentSession?.emulator?.mColors ?: return
+        emulatorColors.reset()
+        updateBackgroundColors()
     }
 
     private fun setupTerminalView() {
         terminalView.setTextSize(TerminalHelper.getTextSize())
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
-        terminalView.setTerminalViewClient(this@TerminalActivity)
-        Typeface.createFromAsset(assets, TERMINAL_FONT_NAME).also(terminalView::setTypeface)
+        terminalView.setTerminalViewClient(this)
+        Typeface.createFromAsset(assets, TerminalHelper.FONT_NAME).also(terminalView::setTypeface)
         updateTerminalColors()
-        terminalView.attachSession(createSession())
         terminalView.isVisible = true
-    }
-
-    private fun onShareTranscript() {
-
     }
 
     private fun onReset() {
 
     }
 
-    private fun toggleActionBar(show: Boolean) {
-        supportActionBar?.let { actionBar ->
-            if (show && !actionBar.isShowing) {
-                actionBar.show()
-            } else if (!show && actionBar.isShowing) {
-                actionBar.hide()
-            }
-        }
+    private fun onShareTranscript() {
+
+    }
+
+    private fun onPaste() {
+
     }
 
     companion object {
-        private const val KEY_TERMINAL = "terminal"
-        private const val TERMINAL_FONT_NAME = "fonts/reddit_regular.ttf"
+        private const val KEY_IS_TERMINAL = "is_terminal"
 
         fun newIntent(context: Context, isTerminal: Boolean): Intent {
             val intent = Intent(context, TerminalActivity::class.java).apply {
-                putExtra(KEY_TERMINAL, isTerminal)
+                putExtra(KEY_IS_TERMINAL, isTerminal)
             }
             return intent
         }

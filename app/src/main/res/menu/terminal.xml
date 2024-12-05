@@ -14,4 +14,10 @@
         android:icon="@drawable/ic_share"
         android:title="@string/share_transcript"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_paste"
+        android:icon="@drawable/ic_paste"
+        android:title="@android:string/paste"
+        app:showAsAction="ifRoom" />
 </menu>

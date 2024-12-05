@@ -10,25 +10,31 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+
 import com.blankj.utilcode.util.ClipboardUtils
+
 import com.google.android.material.color.MaterialColors
+
 import com.pynide.R
 import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.TerminalHelper
 import com.pynide.terminal.TerminalVars
 import com.pynide.utils.AndroidUtilities
+
 import com.termux.terminal.TerminalColors.COLOR_SCHEME
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import com.termux.terminal.TextStyle
 import com.termux.view.TerminalViewClient
+
 import java.util.Properties
 
 class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClient {
@@ -66,10 +72,10 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
         setupTerminalView()
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.terminalRootView) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(terminalView) { _, insets ->
             val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
             AndroidUtilities.toggleActionBar(supportActionBar, !imeVisible)
-            insets
+            WindowInsetsCompat.CONSUMED
         }
 
         terminalView.attachSession(createSession())

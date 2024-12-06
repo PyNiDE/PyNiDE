@@ -11,4 +11,26 @@
         <item>1</item>
         <item>2</item>
     </integer-array>
+
+    <string-array name="terminal_text_size">
+        <item>@string/ten_sp</item>
+        <item>@string/twelve_sp</item>
+        <item>@string/fourteen_sp</item>
+        <item>@string/sixteen_sp</item>
+        <item>@string/eighteen_sp</item>
+        <item>@string/twenty_sp</item>
+        <item>@string/twenty_two_sp</item>
+        <item>@string/twenty_four_sp</item>
+    </string-array>
+
+    <integer-array name="terminal_text_size_value">
+        <item>10</item>
+        <item>12</item>
+        <item>14</item>
+        <item>16</item>
+        <item>18</item>
+        <item>20</item>
+        <item>22</item>
+        <item>24</item>
+    </integer-array>
 </resources>

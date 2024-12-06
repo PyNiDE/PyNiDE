@@ -10,11 +10,26 @@
     <string name="night">रात</string>
     <string name="black_night_theme">काली रात थीम</string>
     <string name="black_night_theme_summary">यदि रात्रि मोड सक्षम है तो शुद्ध काली थीम का उपयोग करें</string>
-    <string name="dynamic_colors">गतिशील रंग</string>
+    <string name="dynamic_colors">डायनेमिक कलर</string>
     <string name="dynamic_colors_summary">सिस्टम वॉलपेपर रंगों का उपयोग करें</string>
     <string name="language">भाषा</string>
     <string name="interpreter">इन्‍टरप्रेटर</string>
     <string name="close">बंद करें</string>
     <string name="reset">रीसेट करें</string>
     <string name="share_transcript">प्रतिलेख साझा करें</string>
+    <string name="keep_screen_on">स्क्रीन चालू रखें</string>
+    <string name="text_size">फ़ॉन्ट आकार</string>
+    <string name="about">के बारे में</string>
+    <string name="version">संस्करण</string>
+    <string name="github">गिटहब</string>
+    <string name="licenses">लाइसेंस</string>
+
+    <string name="ten_sp">10 एसपी</string>
+    <string name="twelve_sp">12 एसपी</string>
+    <string name="fourteen_sp">14 एसपी</string>
+    <string name="sixteen_sp">16 एसपी</string>
+    <string name="eighteen_sp">18 एसपी</string>
+    <string name="twenty_sp">20 एसपी</string>
+    <string name="twenty_two_sp">22 एसपी</string>
+    <string name="twenty_four_sp">24 एसपी</string>
 </resources>

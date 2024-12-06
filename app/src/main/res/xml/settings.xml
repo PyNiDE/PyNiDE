@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         app:key="general"
         app:title="@string/general">
@@ -30,5 +31,54 @@
             app:key="language"
             app:summary="%s"
             app:title="@string/language" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="terminal"
+        app:title="@string/terminal">
+
+        <rikka.material.preference.MaterialSwitchPreference
+            app:iconSpaceReserved="true"
+            app:key="terminal_keep_screen_on"
+            app:title="@string/keep_screen_on" />
+
+        <com.pynide.ui.settings.IntegerSimpleMenuPreference
+            app:defaultValue="14"
+            app:entries="@array/terminal_text_size"
+            app:entryValues="@array/terminal_text_size_value"
+            app:icon="@drawable/ic_format_size"
+            app:key="terminal_text_size"
+            app:summary="%s"
+            app:title="@string/text_size" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="about"
+        app:title="@string/about">
+
+        <Preference
+            app:iconSpaceReserved="true"
+            app:key="about_version"
+            app:persistent="false"
+            app:selectable="false"
+            app:summary="%s"
+            app:title="@string/version" />
+
+        <Preference
+            app:icon="@drawable/ic_github"
+            app:iconSpaceReserved="true"
+            app:key="about_github"
+            app:persistent="false"
+            app:title="@string/github">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/github_url" />
+        </Preference>
+
+        <Preference
+            app:icon="@drawable/ic_license"
+            app:key="about_licenses"
+            app:persistent="false"
+            app:title="@string/licenses" />
     </PreferenceCategory>
 </PreferenceScreen>

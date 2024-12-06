@@ -18,12 +18,14 @@ import androidx.recyclerview.widget.RecyclerView
 
 import com.blankj.utilcode.util.SizeUtils
 
+import com.pynide.BuildVars
 import com.pynide.IDELocales
 import com.pynide.IDESettings
 import com.pynide.R
 import com.pynide.app.ThemeHelper
 import com.pynide.app.ThemeHelper.KEY_BLACK_NIGHT_THEME
 import com.pynide.app.ThemeHelper.KEY_DYNAMIC_COLORS
+import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
 import com.pynide.utils.LocaleDelegate
 
@@ -31,12 +33,19 @@ import java.util.Locale
 
 import com.pynide.IDESettings.LANGUAGE as KEY_LANGUAGE
 import com.pynide.IDESettings.NIGHT_MODE as KEY_NIGHT_MODE
+import com.pynide.terminal.TerminalHelper.KEY_KEEP_SCREEN_ON as KEY_TERMINAL_KEEP_SCREEN_ON
+import com.pynide.terminal.TerminalHelper.KEY_TEXT_SIZE as KEY_TERMINAL_TEXT_SIZE
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var nightModePreference: IntegerSimpleMenuPreference
     private lateinit var blackNightThemePreference: TwoStatePreference
     private lateinit var dynamicColorsPreference: TwoStatePreference
     private lateinit var languagePreference: ListPreference
+    private lateinit var terminalKeepScreenOnPreference: TwoStatePreference
+    private lateinit var terminalTextSizePreference: IntegerSimpleMenuPreference
+    private lateinit var aboutVersionPreference: Preference
+    private lateinit var aboutGithubPreference: Preference
+    private lateinit var aboutLicencesPreference: Preference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.setStorageDeviceProtected()
@@ -48,6 +57,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         blackNightThemePreference = findPreference(KEY_BLACK_NIGHT_THEME)!!
         dynamicColorsPreference = findPreference(KEY_DYNAMIC_COLORS)!!
         languagePreference = findPreference(KEY_LANGUAGE)!!
+        terminalKeepScreenOnPreference = findPreference(KEY_TERMINAL_KEEP_SCREEN_ON)!!
+        terminalTextSizePreference = findPreference(KEY_TERMINAL_TEXT_SIZE)!!
+        aboutVersionPreference = findPreference("about_version")!!
+        aboutGithubPreference = findPreference("about_github")!!
+        aboutLicencesPreference = findPreference("about_licenses")!!
 
         nightModePreference.value = IDESettings.getNightMode()
         nightModePreference.onPreferenceChangeListener =
@@ -75,6 +89,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicColorsPreference.isChecked = ThemeHelper.isDynamicColors()
             dynamicColorsPreference.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, value: Any? ->
                     if (value is Boolean) {
@@ -101,8 +116,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
                 true
             }
-
         setupLocalePreference()
+
+        terminalKeepScreenOnPreference.isChecked = TerminalHelper.isKeepScreenOn()
+        terminalTextSizePreference.value = TerminalHelper.getTextSize()
+        aboutVersionPreference.summary = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
     }
 
     override fun onCreateRecyclerView(
@@ -112,7 +130,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     ): RecyclerView {
         val recyclerView = super.onCreateRecyclerView(inflater, parent, savedInstanceState)
         recyclerView.clipToPadding = false
-        recyclerView.setPadding(0, 0, 0, SizeUtils.dp2px(8f))
+        recyclerView.setPaddingRelative(0, 0, 0, SizeUtils.dp2px(8f))
         return recyclerView
     }
 

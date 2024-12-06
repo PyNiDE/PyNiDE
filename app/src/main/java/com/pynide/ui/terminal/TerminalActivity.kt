@@ -274,7 +274,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun setupTerminalView() {
-        terminalView.setTextSize(TerminalHelper.getTextSize())
+        terminalView.setTextSize(TerminalHelper.getTextSizePx())
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
         terminalView.setTerminalViewClient(this)
         terminalView.attachSession(createSession())

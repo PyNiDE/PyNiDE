@@ -144,8 +144,12 @@ public class TerminalHelper {
         return MapsKt.toSortedMap(vars);
     }
 
+    public static int getTextSizePx() {
+        return SizeUtils.sp2px(getTextSize());
+    }
+
     public static int getTextSize() {
-        return IDESettings.getPreferences().getInt(KEY_TEXT_SIZE, SizeUtils.sp2px(14f));
+        return IDESettings.getPreferences().getInt(KEY_TEXT_SIZE, 14);
     }
 
     public static boolean isKeepScreenOn() {

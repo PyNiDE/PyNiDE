@@ -40,7 +40,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            versionNameSuffix = "-debug"
+        }
         getByName("release") {
+            versionNameSuffix = "-release"
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(

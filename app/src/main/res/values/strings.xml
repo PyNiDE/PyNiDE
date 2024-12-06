@@ -17,4 +17,19 @@
     <string name="close">Close</string>
     <string name="reset">Reset</string>
     <string name="share_transcript">Share transcript</string>
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="text_size">Text size</string>
+    <string name="about">About</string>
+    <string name="version">Version</string>
+    <string name="github">Github</string>
+    <string name="licenses">Licenses</string>
+
+    <string name="ten_sp">10 sp</string>
+    <string name="twelve_sp">12 sp</string>
+    <string name="fourteen_sp">14 sp</string>
+    <string name="sixteen_sp">16 sp</string>
+    <string name="eighteen_sp">18 sp</string>
+    <string name="twenty_sp">20 sp</string>
+    <string name="twenty_two_sp">22 sp</string>
+    <string name="twenty_four_sp">24 sp</string>
 </resources>

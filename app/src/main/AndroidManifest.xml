@@ -45,7 +45,7 @@
             android:hardwareAccelerated="true"
             android:label="@string/terminal"
             android:resizeableActivity="true"
-            android:windowSoftInputMode="adjustResize|stateVisible" />
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
             android:name=".ui.settings.SettingsActivity"

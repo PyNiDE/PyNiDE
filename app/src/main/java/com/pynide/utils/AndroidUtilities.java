@@ -22,13 +22,23 @@ import com.blankj.utilcode.util.Utils;
 import java.io.File;
 
 public class AndroidUtilities {
+    public static void hideIme(@Nullable Window window, @Nullable View view) {
+        toggleIme(window, view, false);
+    }
+
+    public static void showIme(@Nullable Window window, @Nullable View view) {
+        toggleIme(window, view, true);
+    }
+
     public static void toggleIme(@Nullable Window window, @Nullable View view, boolean show) {
         if (window == null || view == null) return;
         var insetsController = WindowCompat.getInsetsController(window, view);
         if (show) {
+            view.requestFocus();
             insetsController.show(WindowInsetsCompat.Type.ime());
         } else {
             insetsController.hide(WindowInsetsCompat.Type.ime());
+            view.clearFocus();
         }
     }
 

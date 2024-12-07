@@ -150,7 +150,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         requireContext().assets.list("fonts")!!
             .filter { it.endsWith(".ttf") }
             .forEach { assetsName ->
-                fontStylesList.add("fonts/$assetsName")
+                fontStylesList.add(assetsName)
                 FileLog.d(assetsName)
 
                 var name = assetsName.replace('-', ' ')

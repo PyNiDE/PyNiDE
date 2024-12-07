@@ -52,7 +52,7 @@
             app:title="@string/font_size" />
 
         <rikka.preference.SimpleMenuPreference
-            app:defaultValue="reddit"
+            app:defaultValue="reddit.ttf"
             app:icon="@drawable/ic_font_download"
             app:key="terminal_font_style"
             app:summary="%s"

@@ -229,7 +229,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     @OptIn(ExperimentalStdlibApi::class)
     private fun updateTerminalColors() {
         val colorsProperties = Properties()
-        assets.open(TerminalHelper.DEFAULT_COLOR_SCHEME).use {
+        assets.open("terminal/colors/${TerminalHelper.DEFAULT_COLOR_SCHEME}").use {
             colorsProperties.load(it)
         }
 
@@ -255,7 +255,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         emulator?.mColors?.reset()
         updateBackgroundColors()
 
-        Typeface.createFromAsset(assets, TerminalHelper.DEFAULT_FONT_STYLE).also(terminalView::setTypeface)
+        Typeface.createFromAsset(assets, "fonts/${TerminalHelper.DEFAULT_FONT_STYLE}").also(terminalView::setTypeface)
     }
 
     private fun setupTerminalView() {

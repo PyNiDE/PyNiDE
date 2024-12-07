@@ -25,8 +25,8 @@ import java.util.Map;
 import kotlin.collections.MapsKt;
 
 public class TerminalHelper {
-    public static final String DEFAULT_FONT_STYLE = "fonts/reddit_regular.ttf";
-    public static final String DEFAULT_COLOR_SCHEME = "terminal/colors/material.properties";
+    public static final String DEFAULT_FONT_STYLE = "reddit.ttf";
+    public static final String DEFAULT_COLOR_SCHEME = "material.properties";
 
     public static final String KEY_FONT_STYLE = "terminal_font_style";
     public static final String KEY_FONT_SIZE = "terminal_font_size";

@@ -54,6 +54,7 @@ public class BellHandler {
         long now = now();
         long timeSinceLastBell = now - lastBell;
 
+        //noinspection StatementWithEmptyBody
         if (timeSinceLastBell < 0) {
             // there is a next bell pending; don't schedule another one
         } else if (timeSinceLastBell < MIN_PAUSE) {

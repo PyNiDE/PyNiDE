@@ -1,7 +1,5 @@
 package com.pynide.ui.settings
 
-import android.content.Context
-import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
 
@@ -33,11 +31,5 @@ class SettingsActivity : IDEActivity() {
     override fun onApplyUserThemeResource(theme: Resources.Theme?, isDecorView: Boolean) {
         super.onApplyUserThemeResource(theme, isDecorView)
         theme?.applyStyle(R.style.ThemeOverlay_PyNiDE_Preference, true)
-    }
-
-    companion object {
-        fun newIntent(context: Context): Intent {
-            return Intent(context, SettingsActivity::class.java)
-        }
     }
 }

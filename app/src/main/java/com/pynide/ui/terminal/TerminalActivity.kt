@@ -1,7 +1,5 @@
 package com.pynide.ui.terminal
 
-import android.content.Context
-import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.InputDevice
@@ -27,7 +25,6 @@ import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.BellHandler
 import com.pynide.terminal.TerminalHelper
-import com.pynide.terminal.TerminalVars
 import com.pynide.utils.AndroidUtilities
 
 import com.termux.terminal.TerminalColors
@@ -67,8 +64,6 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
             override fun handleOnBackPressed() {
                 if (terminalView.isSelectingText) {
                     terminalView.stopTextSelectionMode()
-                } else {
-                    finish()
                 }
             }
         })
@@ -222,16 +217,6 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         return super.onOptionsItemSelected(item)
     }
 
-    private fun createSession(): TerminalSession {
-        val newSession = TerminalHelper.createSession(
-            TerminalVars.SHELL,
-            TerminalVars.HOME,
-            null,
-            this
-        )
-        return newSession
-    }
-
     private fun updateBackgroundColors() {
         val decorView = window.decorView
         val contentView = decorView.findViewById<View>(Window.ID_ANDROID_CONTENT)
@@ -244,40 +229,40 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     @OptIn(ExperimentalStdlibApi::class)
     private fun updateTerminalColors() {
         val colorsProperties = Properties()
-        assets.open(TerminalHelper.COLOR_NAME).use {
+        assets.open(TerminalHelper.DEFAULT_COLOR_SCHEME).use {
             colorsProperties.load(it)
         }
 
-        val decorView = window.decorView
-        fun toHexColor(color: Int): String {
-            return "#" + color.toHexString().substring(2)
-        }
-
-        val systemBackgroundColor =
-            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorSurface)
-        val systemForegroundColor =
-            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
-
-        colorsProperties["background"] = toHexColor(systemBackgroundColor)
-        colorsProperties["foreground"] = toHexColor(systemForegroundColor)
-        colorsProperties["cursor"] = toHexColor(systemForegroundColor)
-        repeat(15) {
-            colorsProperties["color$it"] = toHexColor(systemForegroundColor)
-        }
+//        val decorView = window.decorView
+//        fun toHexColor(color: Int): String {
+//            return "#" + color.toHexString().substring(2)
+//        }
+//
+//        val systemBackgroundColor =
+//            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorSurface)
+//        val systemForegroundColor =
+//            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
+//
+//        colorsProperties["background"] = toHexColor(systemBackgroundColor)
+//        colorsProperties["foreground"] = toHexColor(systemForegroundColor)
+//        colorsProperties["cursor"] = toHexColor(systemForegroundColor)
+//        repeat(15) {
+//            colorsProperties["color$it"] = toHexColor(systemForegroundColor)
+//       }
 
         TerminalColors.COLOR_SCHEME.updateWith(colorsProperties)
         val emulator = currentSession?.emulator
         emulator?.mColors?.reset()
         updateBackgroundColors()
 
-        Typeface.createFromAsset(assets, TerminalHelper.FONT_NAME).also(terminalView::setTypeface)
+        Typeface.createFromAsset(assets, TerminalHelper.DEFAULT_FONT_STYLE).also(terminalView::setTypeface)
     }
 
     private fun setupTerminalView() {
-        terminalView.setTextSize(TerminalHelper.getTextSizePx())
+        terminalView.setTextSize(TerminalHelper.getFontSizePx())
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
         terminalView.setTerminalViewClient(this)
-        terminalView.attachSession(createSession())
+        terminalView.attachSession(TerminalHelper.createSession(this))
         updateTerminalColors()
         terminalView.isVisible = true
         terminalView.requestFocus()
@@ -296,13 +281,6 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     companion object {
-        private const val KEY_IS_TERMINAL = "is_terminal"
-
-        fun newIntent(context: Context, isTerminal: Boolean): Intent {
-            val intent = Intent(context, TerminalActivity::class.java).apply {
-                putExtra(KEY_IS_TERMINAL, isTerminal)
-            }
-            return intent
-        }
+        const val KEY_IS_TERMINAL = "is_terminal"
     }
 }

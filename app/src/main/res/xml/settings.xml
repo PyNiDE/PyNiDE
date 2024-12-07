@@ -47,9 +47,16 @@
             app:entries="@array/terminal_text_size"
             app:entryValues="@array/terminal_text_size_value"
             app:icon="@drawable/ic_format_size"
-            app:key="terminal_text_size"
+            app:key="terminal_font_size"
             app:summary="%s"
-            app:title="@string/text_size" />
+            app:title="@string/font_size" />
+
+        <rikka.preference.SimpleMenuPreference
+            app:defaultValue="reddit"
+            app:icon="@drawable/ic_font_download"
+            app:key="terminal_font_style"
+            app:summary="%s"
+            app:title="@string/font_style" />
     </PreferenceCategory>
 
     <PreferenceCategory

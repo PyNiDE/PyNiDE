@@ -22,17 +22,17 @@ import com.blankj.utilcode.util.Utils;
 import java.io.File;
 
 public class AndroidUtilities {
-    public static void hideIme(@Nullable Window window, @Nullable View view) {
+    public static void hideIme(@Nullable final Window window, @Nullable final View view) {
         toggleIme(window, view, false);
     }
 
-    public static void showIme(@Nullable Window window, @Nullable View view) {
+    public static void showIme(@Nullable final Window window, @Nullable final View view) {
         toggleIme(window, view, true);
     }
 
-    public static void toggleIme(@Nullable Window window, @Nullable View view, boolean show) {
+    public static void toggleIme(@Nullable final Window window, @Nullable final View view, final boolean show) {
         if (window == null || view == null) return;
-        var insetsController = WindowCompat.getInsetsController(window, view);
+        final var insetsController = WindowCompat.getInsetsController(window, view);
         if (show) {
             view.requestFocus();
             insetsController.show(WindowInsetsCompat.Type.ime());
@@ -42,7 +42,7 @@ public class AndroidUtilities {
         }
     }
 
-    public static void toggleActionBar(@Nullable ActionBar actionBar, boolean show) {
+    public static void toggleActionBar(@Nullable final ActionBar actionBar, final boolean show) {
         if (actionBar == null) return;
         if (show && !actionBar.isShowing()) {
             actionBar.show();
@@ -52,28 +52,28 @@ public class AndroidUtilities {
     }
 
     @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@Nullable Menu menu, boolean visible) {
+    public static void setOptionalIcons(@Nullable final Menu menu, final boolean visible) {
         if (menu == null) return;
         if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible);
     }
 
     @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@NonNull MenuBuilder menuBuilder, boolean visible) {
+    public static void setOptionalIcons(@NonNull final MenuBuilder menuBuilder, final boolean visible) {
         menuBuilder.setOptionalIconsVisible(visible);
-        for (var item : menuBuilder.getVisibleItems()) {
+        for (final var item : menuBuilder.getVisibleItems()) {
             if (item.getIcon() != null && item.requiresOverflow()) {
                 item.setIcon(new InsetDrawable(item.getIcon(), SizeUtils.dp2px(8f), 0, SizeUtils.dp2px(8f), 0));
             }
         }
     }
 
-    public static boolean isNightMode(@Nullable Context context) {
+    public static boolean isNightMode(@Nullable final Context context) {
         if (context == null) return false;
         var configuration = context.getResources().getConfiguration();
         return isNightMode(configuration);
     }
 
-    public static boolean isNightMode(@Nullable Configuration configuration) {
+    public static boolean isNightMode(@Nullable final Configuration configuration) {
         if (configuration == null) return false;
         var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;

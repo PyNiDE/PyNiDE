@@ -27,14 +27,17 @@ import com.pynide.app.ThemeHelper.KEY_BLACK_NIGHT_THEME
 import com.pynide.app.ThemeHelper.KEY_DYNAMIC_COLORS
 import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
+import com.pynide.utils.FileLog
 import com.pynide.utils.LocaleDelegate
+import com.pynide.utils.Utilities
 
 import java.util.Locale
 
 import com.pynide.IDESettings.LANGUAGE as KEY_LANGUAGE
 import com.pynide.IDESettings.NIGHT_MODE as KEY_NIGHT_MODE
+import com.pynide.terminal.TerminalHelper.KEY_FONT_SIZE as KEY_TERMINAL_FONT_SIZE
+import com.pynide.terminal.TerminalHelper.KEY_FONT_STYLE as KEY_TERMINAL_FONT_STYLE
 import com.pynide.terminal.TerminalHelper.KEY_KEEP_SCREEN_ON as KEY_TERMINAL_KEEP_SCREEN_ON
-import com.pynide.terminal.TerminalHelper.KEY_TEXT_SIZE as KEY_TERMINAL_TEXT_SIZE
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var nightModePreference: IntegerSimpleMenuPreference
@@ -42,7 +45,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var dynamicColorsPreference: TwoStatePreference
     private lateinit var languagePreference: ListPreference
     private lateinit var terminalKeepScreenOnPreference: TwoStatePreference
-    private lateinit var terminalTextSizePreference: IntegerSimpleMenuPreference
+    private lateinit var terminalFontSizePreference: IntegerSimpleMenuPreference
+    private lateinit var terminalFontStylePreference: ListPreference
     private lateinit var aboutVersionPreference: Preference
     private lateinit var aboutGithubPreference: Preference
     private lateinit var aboutLicencesPreference: Preference
@@ -58,7 +62,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         dynamicColorsPreference = findPreference(KEY_DYNAMIC_COLORS)!!
         languagePreference = findPreference(KEY_LANGUAGE)!!
         terminalKeepScreenOnPreference = findPreference(KEY_TERMINAL_KEEP_SCREEN_ON)!!
-        terminalTextSizePreference = findPreference(KEY_TERMINAL_TEXT_SIZE)!!
+        terminalFontSizePreference = findPreference(KEY_TERMINAL_FONT_SIZE)!!
+        terminalFontStylePreference = findPreference(KEY_TERMINAL_FONT_STYLE)!!
         aboutVersionPreference = findPreference("about_version")!!
         aboutGithubPreference = findPreference("about_github")!!
         aboutLicencesPreference = findPreference("about_licenses")!!
@@ -106,7 +111,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         languagePreference.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 if (newValue is String) {
-                    val locale: Locale = if ("SYSTEM" == newValue) {
+                    val locale = if ("SYSTEM" == newValue) {
                         LocaleDelegate.systemLocale
                     } else {
                         Locale.forLanguageTag(newValue)
@@ -119,8 +124,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setupLocalePreference()
 
         terminalKeepScreenOnPreference.isChecked = TerminalHelper.isKeepScreenOn()
-        terminalTextSizePreference.value = TerminalHelper.getTextSize()
-        aboutVersionPreference.summary = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
+        terminalFontSizePreference.value = TerminalHelper.getFontSize()
+
+        setupTerminalFontStylePreference()
+
+        aboutVersionPreference.summary =
+            String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
     }
 
     override fun onCreateRecyclerView(
@@ -132,6 +141,49 @@ class SettingsFragment : PreferenceFragmentCompat() {
         recyclerView.clipToPadding = false
         recyclerView.setPaddingRelative(0, 0, 0, SizeUtils.dp2px(8f))
         return recyclerView
+    }
+
+    private fun setupTerminalFontStylePreference() {
+        val fontStylesList = mutableListOf<String>()
+        val displayFontStylesList = mutableListOf<String>()
+
+        requireContext().assets.list("fonts")!!
+            .filter { it.endsWith(".ttf") }
+            .forEach { assetsName ->
+                fontStylesList.add("fonts/$assetsName")
+                FileLog.d(assetsName)
+
+                var name = assetsName.replace('-', ' ')
+                val dotIndex = name.lastIndexOf('.')
+                if (dotIndex != -1) name = name.substring(0, dotIndex)
+                val displayName = Utilities.capitalize(name)
+                displayFontStylesList.add(displayName)
+            }
+
+        val fontStyles = fontStylesList.toTypedArray()
+        val displayFontStyles = displayFontStylesList.toTypedArray()
+
+        terminalFontStylePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_STYLE)
+        terminalFontStylePreference.entries = displayFontStyles
+        terminalFontStylePreference.entryValues = fontStyles
+
+        val currentFontStyleValue = terminalFontStylePreference.value
+        val currentFontStyleIndex = fontStyles.indexOf(currentFontStyleValue)
+        val currentFontStyle = TerminalHelper.getFontStyle()
+
+        terminalFontStylePreference.summary = when {
+            TextUtils.isEmpty(currentFontStyleValue) || "reddit" == currentFontStyleValue -> {
+                "Reddit"
+            }
+
+            currentFontStyleIndex != -1 -> {
+                displayFontStyles[currentFontStyleIndex]
+            }
+
+            else -> {
+                ""
+            }
+        }
     }
 
     private fun setupLocalePreference() {

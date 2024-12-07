@@ -5,7 +5,10 @@ import android.view.Menu
 import android.view.MenuItem
 
 import androidx.activity.enableEdgeToEdge
+import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+
+import com.blankj.utilcode.util.ActivityUtils
 
 import com.pynide.R
 import com.pynide.app.IDEActivity
@@ -38,9 +41,19 @@ class LaunchActivity : IDEActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_terminal -> startActivity(TerminalActivity.newIntent(this, true))
-            R.id.action_settings -> startActivity(SettingsActivity.newIntent(this))
-            R.id.action_interpreter -> startActivity(TerminalActivity.newIntent(this, false))
+            R.id.action_terminal -> {
+                val extras = bundleOf(TerminalActivity.KEY_IS_TERMINAL to true)
+                ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
+            }
+
+            R.id.action_settings -> {
+                ActivityUtils.startActivity(this, SettingsActivity::class.java)
+            }
+
+            R.id.action_interpreter -> {
+                val extras = bundleOf(TerminalActivity.KEY_IS_TERMINAL to false)
+                ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
+            }
         }
         return super.onOptionsItemSelected(item)
     }

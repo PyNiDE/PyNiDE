@@ -19,6 +19,6 @@ class IDEApplication : Application() {
         LocaleDelegate.defaultLocale = IDESettings.getLocale()
         AppCompatDelegate.setDefaultNightMode(IDESettings.getNightMode())
 
-        FileLog.d("app initied");
+        FileLog.d("app initied")
     }
 }

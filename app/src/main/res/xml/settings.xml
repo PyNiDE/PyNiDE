@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         app:key="general"
         app:title="@string/general">
@@ -64,7 +63,7 @@
         app:title="@string/about">
 
         <Preference
-            app:iconSpaceReserved="true"
+            app:icon="@drawable/ic_logo"
             app:key="about_version"
             app:persistent="false"
             app:selectable="false"
@@ -76,16 +75,18 @@
             app:iconSpaceReserved="true"
             app:key="about_github"
             app:persistent="false"
-            app:title="@string/github">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/github_url" />
-        </Preference>
+            app:title="@string/github" />
+
+        <Preference
+            app:icon="@drawable/ic_bug_report"
+            app:key="about_report_bug"
+            app:persistent="false"
+            app:title="@string/report_bug" />
 
         <Preference
             app:icon="@drawable/ic_license"
-            app:key="about_licenses"
+            app:key="about_oss_licenses"
             app:persistent="false"
-            app:title="@string/licenses" />
+            app:title="@string/oss_licenses" />
     </PreferenceCategory>
 </PreferenceScreen>

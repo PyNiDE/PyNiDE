@@ -22,14 +22,6 @@ import com.blankj.utilcode.util.Utils;
 import java.io.File;
 
 public class AndroidUtilities {
-    public static void hideIme(@Nullable final Window window, @Nullable final View view) {
-        toggleIme(window, view, false);
-    }
-
-    public static void showIme(@Nullable final Window window, @Nullable final View view) {
-        toggleIme(window, view, true);
-    }
-
     public static void toggleIme(@Nullable final Window window, @Nullable final View view, final boolean show) {
         if (window == null || view == null) return;
         final var insetsController = WindowCompat.getInsetsController(window, view);
@@ -42,6 +34,14 @@ public class AndroidUtilities {
         }
     }
 
+    public static void showIme(@Nullable final Window window, @Nullable final View view) {
+        toggleIme(window, view, true);
+    }
+
+    public static void hideIme(@Nullable final Window window, @Nullable final View view) {
+        toggleIme(window, view, false);
+    }
+
     public static void toggleActionBar(@Nullable final ActionBar actionBar, final boolean show) {
         if (actionBar == null) return;
         if (show && !actionBar.isShowing()) {
@@ -49,12 +49,6 @@ public class AndroidUtilities {
         } else if (!show && actionBar.isShowing()) {
             actionBar.hide();
         }
-    }
-
-    @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@Nullable final Menu menu, final boolean visible) {
-        if (menu == null) return;
-        if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible);
     }
 
     @SuppressLint("RestrictedApi")
@@ -67,23 +61,30 @@ public class AndroidUtilities {
         }
     }
 
-    public static boolean isNightMode(@Nullable final Context context) {
-        if (context == null) return false;
-        var configuration = context.getResources().getConfiguration();
-        return isNightMode(configuration);
+    @SuppressLint("RestrictedApi")
+    public static void setOptionalIcons(@Nullable final Menu menu, final boolean visible) {
+        if (menu == null) return;
+        if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible);
     }
 
     public static boolean isNightMode(@Nullable final Configuration configuration) {
         if (configuration == null) return false;
-        var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        final var nightModeFlags = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
     }
 
+    public static boolean isNightMode(@Nullable final Context context) {
+        if (context == null) return false;
+        final var configuration = context.getResources().getConfiguration();
+        return isNightMode(configuration);
+    }
+
+    @Nullable
     public static File getLogsDir() {
         try {
             if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-                File path = Utils.getApp().getExternalFilesDir(null);
-                File dir = new File(path, "/logs");
+                final var path = Utils.getApp().getExternalFilesDir(null);
+                final var dir = new File(path, "logs");
                 dir.mkdirs();
                 return dir;
             }
@@ -91,14 +92,14 @@ public class AndroidUtilities {
 
         }
         try {
-            File dir = new File(Utils.getApp().getCacheDir(), "/logs");
+            final var dir = new File(Utils.getApp().getCacheDir(), "logs");
             dir.mkdirs();
             return dir;
         } catch (Exception ignored) {
 
         }
         try {
-            File dir = new File(Utils.getApp().getFilesDir(), "/logs");
+            final var dir = new File(Utils.getApp().getFilesDir(), "logs");
             dir.mkdirs();
             return dir;
         } catch (Exception ignored) {

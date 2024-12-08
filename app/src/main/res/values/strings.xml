@@ -23,7 +23,8 @@
     <string name="about">About</string>
     <string name="version">Version</string>
     <string name="github">Github</string>
-    <string name="licenses">Licenses</string>
+    <string name="oss_licenses">Open source licenses</string>
+    <string name="report_bug">Report bug</string>
 
     <string name="ten_sp">10 sp</string>
     <string name="twelve_sp">12 sp</string>

@@ -190,7 +190,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onBell(session: TerminalSession) {
         if (isStarted) {
-            BellHandler.getInstance(this).doBell()
+            BellHandler.getInstance().doBell()
         }
     }
 

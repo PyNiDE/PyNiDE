@@ -1,5 +1,7 @@
 package com.pynide;
 
+import androidx.annotation.NonNull;
+
 import com.pynide.utils.FileLog;
 
 import java.util.Arrays;
@@ -21,6 +23,7 @@ public class NativeLoader {
         }
     }
 
+    @NonNull
     public static String[] getLibNames() {
         return (String[]) Arrays.stream(LIB_NAMES).map(libName -> String.format("lib%s.so", libName)).toArray();
     }

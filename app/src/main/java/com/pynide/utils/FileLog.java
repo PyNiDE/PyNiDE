@@ -32,7 +32,7 @@ public class FileLog {
     }
 
     public static FileLog getInstance() {
-        FileLog localInstance = Instance;
+        var localInstance = Instance;
         if (localInstance == null) {
             synchronized (FileLog.class) {
                 localInstance = Instance;
@@ -50,9 +50,9 @@ public class FileLog {
         }
         dateFormat = FastDateFormat.getInstance("dd_MM_yyyy_HH_mm_ss.SSS", Locale.US);
         fileDateFormat = FastDateFormat.getInstance("dd_MM_yyyy_HH_mm_ss", Locale.US);
-        String date = fileDateFormat.format(System.currentTimeMillis());
+        final var date = fileDateFormat.format(System.currentTimeMillis());
         try {
-            File dir = AndroidUtilities.getLogsDir();
+            final var dir = AndroidUtilities.getLogsDir();
             if (dir == null) {
                 return;
             }
@@ -63,7 +63,7 @@ public class FileLog {
         try {
             logQueue = new DispatchQueue("logQueue");
             currentFile.createNewFile();
-            FileOutputStream stream = new FileOutputStream(currentFile);
+            final var stream = new FileOutputStream(currentFile);
             streamWriter = new OutputStreamWriter(stream);
             streamWriter.write("-----start log " + date + "-----\n");
             streamWriter.flush();
@@ -88,8 +88,8 @@ public class FileLog {
                 try {
                     getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: " + message + "\n");
                     getInstance().streamWriter.write(exception.toString());
-                    StackTraceElement[] stack = exception.getStackTrace();
-                    for (StackTraceElement stackTraceElement : stack) {
+                    final var stack = exception.getStackTrace();
+                    for (final var stackTraceElement : stack) {
                         getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: \tat " + stackTraceElement + "\n");
                     }
                     getInstance().streamWriter.flush();
@@ -128,15 +128,15 @@ public class FileLog {
             getInstance().logQueue.postRunnable(() -> {
                 try {
                     getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: " + e + "\n");
-                    StackTraceElement[] stack = e.getStackTrace();
-                    for (StackTraceElement stackTraceElement : stack) {
+                    var stack = e.getStackTrace();
+                    for (final var stackTraceElement : stack) {
                         getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: \tat " + stackTraceElement + "\n");
                     }
-                    Throwable cause = e.getCause();
+                    final var cause = e.getCause();
                     if (cause != null) {
                         getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: Caused by " + cause + "\n");
                         stack = cause.getStackTrace();
-                        for (StackTraceElement stackTraceElement : stack) {
+                        for (final var stackTraceElement : stack) {
                             getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: \tat " + stackTraceElement + "\n");
                         }
                     }
@@ -160,15 +160,15 @@ public class FileLog {
             getInstance().logQueue.postRunnable(() -> {
                 try {
                     getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " FATAL/pynide: " + e + "\n");
-                    StackTraceElement[] stack = e.getStackTrace();
-                    for (StackTraceElement traceElement : stack) {
+                    var stack = e.getStackTrace();
+                    for (final var traceElement : stack) {
                         getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " FATAL/pynide: \tat " + traceElement + "\n");
                     }
-                    Throwable cause = e.getCause();
+                    final var cause = e.getCause();
                     if (cause != null) {
                         getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: Caused by " + cause + "\n");
                         stack = cause.getStackTrace();
-                        for (StackTraceElement stackTraceElement : stack) {
+                        for (final var stackTraceElement : stack) {
                             getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/pynide: \tat " + stackTraceElement + "\n");
                         }
                     }
@@ -220,13 +220,13 @@ public class FileLog {
 
     public static void cleanupLogs() {
         ensureInitied();
-        File dir = AndroidUtilities.getLogsDir();
+        final var dir = AndroidUtilities.getLogsDir();
         if (dir == null) {
             return;
         }
-        File[] files = dir.listFiles();
+        final var files = dir.listFiles();
         if (files != null) {
-            for (File file : files) {
+            for (final var file : files) {
                 if (getInstance().currentFile != null && file.getAbsolutePath().equals(getInstance().currentFile.getAbsolutePath())) {
                     continue;
                 }

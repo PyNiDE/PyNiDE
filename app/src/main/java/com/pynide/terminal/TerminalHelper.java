@@ -25,22 +25,162 @@ import java.util.Map;
 import kotlin.collections.MapsKt;
 
 public class TerminalHelper {
+    public static final String KEY_KEEP_SCREEN_ON = "terminal_keep_screen_on";
+    public static final String KEY_FONT_SIZE = "terminal_font_size";
+    public static final String KEY_FONT_STYLE = "terminal_font_style";
+    public static final String KEY_COLOR_SCHEME = "terminal_color_scheme";
+
+    public static final int DEFAULT_FONT_SIZE = 14;
     public static final String DEFAULT_FONT_STYLE = "reddit.ttf";
     public static final String DEFAULT_COLOR_SCHEME = "material.properties";
 
-    public static final String KEY_FONT_STYLE = "terminal_font_style";
-    public static final String KEY_FONT_SIZE = "terminal_font_size";
-    public static final String KEY_KEEP_SCREEN_ON = "terminal_keep_screen_on";
-
-    public static TerminalSession createSession(@Nullable TerminalSessionClient sessionClient) {
-        return createSession(null, null, null, sessionClient);
+    public static boolean isKeepScreenOn() {
+        return IDESettings.getPreferences().getBoolean(KEY_KEEP_SCREEN_ON, true);
     }
 
+    public static int getFontSize() {
+        return IDESettings.getPreferences().getInt(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    }
+
+    public static int getFontSizePx() {
+        return SizeUtils.sp2px(getFontSize());
+    }
+
+    public static String getFontStyle() {
+        return IDESettings.getPreferences().getString(KEY_FONT_STYLE, DEFAULT_FONT_STYLE);
+    }
+
+    public static String getColorScheme() {
+        return IDESettings.getPreferences().getString(KEY_COLOR_SCHEME, DEFAULT_COLOR_SCHEME);
+    }
+
+    @NonNull
+    public static Map<String, String> createEnvironmentVars() {
+        final var environmentVars = new HashMap<String, String>();
+        var temp = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
+
+        FileUtils.createOrExistsDir(TerminalVars.FILES_PATH);
+        FileUtils.createOrExistsDir(TerminalVars.HOME_PATH);
+        FileUtils.createOrExistsDir(TerminalVars.PREFIX_PATH);
+        FileUtils.createOrExistsDir(temp);
+
+        environmentVars.put("FILES", TerminalVars.FILES_PATH);
+        environmentVars.put("HOME", TerminalVars.HOME_PATH);
+        environmentVars.put("PREFIX", TerminalVars.PREFIX_PATH);
+        environmentVars.put("TMPDIR", temp);
+        environmentVars.put("TMP", temp);
+        environmentVars.put("TERM", "xterm-256color");
+        environmentVars.put("COLORTERM", "truecolor");
+        environmentVars.put("LANG", "en_US.UTF-8");
+
+        temp = String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
+        environmentVars.put("SHELL", temp);
+
+        temp = String.valueOf(BuildVars.DEBUG_VERSION);
+        environmentVars.put("PYNIDE_DEBUG", temp);
+        temp = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE);
+        environmentVars.put("PYNIDE_VERSION", temp);
+        environmentVars.put("PYNIDE_PACKAGE", BuildVars.PACKAGE_NAME);
+
+        temp = System.getenv("PATH");
+        environmentVars.put("PATH", String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp));
+        temp = System.getenv("LD_LIBRARY_PATH");
+        if (temp == null) {
+            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib", TerminalVars.PREFIX_PATH));
+        } else {
+            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp));
+        }
+        temp = String.format("%s/lib/terminal-exec.so", TerminalVars.PREFIX_PATH);
+        if (FileUtils.isFileExists(temp)) {
+            environmentVars.put("LD_PRELOAD", temp);
+        }
+
+        temp = String.valueOf(android.os.Process.is64Bit());
+        environmentVars.put("PROC_64BIT", temp);
+        return MapsKt.toSortedMap(environmentVars);
+    }
+
+    @NonNull
+    public static String[] createEnvironmentVarsArray() {
+        final var environmentVars = createEnvironmentVars();
+        final var environmentVarsList = new ArrayList<String>(environmentVars.size());
+        environmentVars.forEach((key, value) -> environmentVarsList.add(key + "=" + value));
+        Collections.sort(environmentVarsList);
+        return environmentVarsList.toArray(new String[0]);
+    }
+
+    @NonNull
+    public static SessionCommand createShellCommandArguments(@NonNull final String executablePath, @NonNull final String[] arguments, final boolean isLoginShell) {
+        final var executable = new File(executablePath);
+        String interpreter = null;
+        try (final var in = new FileInputStream(executable)) {
+            final var buffer = new byte[256];
+            final var bytesRead = in.read(buffer);
+            if (bytesRead > 4) {
+                //noinspection StatementWithEmptyBody
+                if (buffer[0] == 0x7F && buffer[1] == 'E' && buffer[2] == 'L' && buffer[3] == 'F') {
+                    // Elf file, do nothing.
+                } else if (buffer[0] == '#' && buffer[1] == '!') {
+                    // Try to parse shebang.
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 2; i < bytesRead; i++) {
+                        char c = (char) buffer[i];
+                        if (c == ' ' || c == '\n') {
+                            //noinspection StatementWithEmptyBody
+                            if (builder.length() == 0) {
+                                // Skip whitespace after shebang.
+                            } else {
+                                // End of shebang.
+                                final var shebangExecutable = builder.toString();
+                                if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin")) {
+                                    final var parts = shebangExecutable.split("/");
+                                    final var binary = parts[parts.length - 1];
+                                    interpreter = String.format("%s/bin/%s", TerminalVars.PREFIX_PATH, binary);
+                                } else if (shebangExecutable.startsWith(TerminalVars.FILES_PATH)) {
+                                    interpreter = shebangExecutable;
+                                }
+                                break;
+                            }
+                        } else {
+                            builder.append(c);
+                        }
+                    }
+                } else {
+                    // No shebang and no ELF, use standard shell.
+                    interpreter = String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
+                }
+            }
+        } catch (IOException e) {
+            FileLog.e(e);
+        }
+
+        final var elfFileToExecute = interpreter == null ? executablePath : interpreter;
+
+        final var actualArguments = new ArrayList<String>();
+        final var processName = (isLoginShell ? "-" : "") + executable.getName();
+        actualArguments.add(processName);
+
+        final String actualFileToExecute;
+        if (elfFileToExecute.startsWith(TerminalVars.FILES_PATH)) {
+            actualFileToExecute = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
+            actualArguments.add(elfFileToExecute);
+        } else {
+            actualFileToExecute = elfFileToExecute;
+        }
+
+        if (interpreter != null) {
+            actualArguments.add(executable.getAbsolutePath());
+        }
+        Collections.addAll(actualArguments, arguments);
+        return new SessionCommand(actualFileToExecute, actualArguments.toArray(new String[0]));
+    }
+
+    @NonNull
     public static TerminalSession createSession(@Nullable File executable, @Nullable final File workingDirectory, @Nullable final List<String> arguments, @Nullable final TerminalSessionClient sessionClient) {
         final var isLoginShell = executable == null;
 
         if (executable == null) {
-            final var shell = new File(TerminalVars.SHELL_PATH);
+            final var shell = new File(TerminalVars.PREFIX_PATH, "bin/sh");
             if (FileUtils.isFileExists(shell)) {
                 if (!shell.canExecute()) shell.setExecutable(true);
                 executable = shell;
@@ -111,136 +251,13 @@ public class TerminalHelper {
             }
         };
 
-        var newSession = new TerminalSession(sessionCommand.executablePath, workingDirectoryPath, sessionCommand.argumentsArray, environmentVarsArray, 4000, tempSessionClient);
+        final var newSession = new TerminalSession(sessionCommand.executablePath, workingDirectoryPath, sessionCommand.argumentsArray, environmentVarsArray, 4000, tempSessionClient);
         newSession.mSessionName = "Session";
         return newSession;
     }
 
     @NonNull
-    public static SessionCommand createShellCommandArguments(@NonNull String executablePath, @NonNull String[] arguments, boolean isLoginShell) {
-        final File executable = new File(executablePath);
-        String interpreter = null;
-        try (FileInputStream in = new FileInputStream(executable)) {
-            byte[] buffer = new byte[256];
-            int bytesRead = in.read(buffer);
-            if (bytesRead > 4) {
-                //noinspection StatementWithEmptyBody
-                if (buffer[0] == 0x7F && buffer[1] == 'E' && buffer[2] == 'L' && buffer[3] == 'F') {
-                    // Elf file, do nothing.
-                } else if (buffer[0] == '#' && buffer[1] == '!') {
-                    // Try to parse shebang.
-                    StringBuilder builder = new StringBuilder();
-                    for (int i = 2; i < bytesRead; i++) {
-                        char c = (char) buffer[i];
-                        if (c == ' ' || c == '\n') {
-                            //noinspection StatementWithEmptyBody
-                            if (builder.length() == 0) {
-                                // Skip whitespace after shebang.
-                            } else {
-                                // End of shebang.
-                                String shebangExecutable = builder.toString();
-                                if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin")) {
-                                    String[] parts = shebangExecutable.split("/");
-                                    String binary = parts[parts.length - 1];
-                                    interpreter = TerminalVars.PREFIX_PATH + "/bin/" + binary;
-                                } else if (shebangExecutable.startsWith(TerminalVars.FILES_PATH)) {
-                                    interpreter = shebangExecutable;
-                                }
-                                break;
-                            }
-                        } else {
-                            builder.append(c);
-                        }
-                    }
-                } else {
-                    // No shebang and no ELF, use standard shell.
-                    interpreter = TerminalVars.SHELL_PATH;
-                }
-            }
-        } catch (IOException e) {
-            FileLog.e(e);
-        }
-
-        var elfFileToExecute = interpreter == null ? executablePath : interpreter;
-
-        var actualArguments = new ArrayList<String>();
-        var processName = (isLoginShell ? "-" : "") + executable.getName();
-        actualArguments.add(processName);
-
-        String actualFileToExecute;
-        if (elfFileToExecute.startsWith(TerminalVars.FILES_PATH)) {
-            actualFileToExecute = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
-            actualArguments.add(elfFileToExecute);
-        } else {
-            actualFileToExecute = elfFileToExecute;
-        }
-
-        if (interpreter != null) {
-            actualArguments.add(executable.getAbsolutePath());
-        }
-        Collections.addAll(actualArguments, arguments);
-        return new SessionCommand(actualFileToExecute, actualArguments.toArray(new String[0]));
-    }
-
-    public static String[] createEnvironmentVarsArray() {
-        var environmentVars = createEnvironmentVars();
-        var environmentVarsList = new ArrayList<String>(environmentVars.size());
-        environmentVars.forEach((key, value) -> environmentVarsList.add(key + "=" + value));
-        Collections.sort(environmentVarsList);
-        return environmentVarsList.toArray(new String[0]);
-    }
-
-    public static Map<String, String> createEnvironmentVars() {
-        FileUtils.createOrExistsDir(TerminalVars.FILES_PATH);
-        FileUtils.createOrExistsDir(TerminalVars.HOME_PATH);
-        FileUtils.createOrExistsDir(TerminalVars.PREFIX_PATH);
-        FileUtils.createOrExistsDir(TerminalVars.TEMP_PATH);
-
-        var environmentVars = new HashMap<String, String>();
-        environmentVars.put("FILES", TerminalVars.FILES_PATH);
-        environmentVars.put("HOME", TerminalVars.HOME_PATH);
-        environmentVars.put("PREFIX", TerminalVars.PREFIX_PATH);
-        environmentVars.put("TMPDIR", TerminalVars.TEMP_PATH);
-        environmentVars.put("TMP", TerminalVars.TEMP_PATH);
-        environmentVars.put("TERM", "xterm-256color");
-        environmentVars.put("COLORTERM", "truecolor");
-        environmentVars.put("LANG", "en_US.UTF-8");
-        environmentVars.put("SHELL", TerminalVars.SHELL_PATH);
-
-        var temp = String.valueOf(BuildVars.DEBUG_VERSION);
-        environmentVars.put("PYNIDE_DEBUG", temp);
-        temp = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE);
-        environmentVars.put("PYNIDE_VERSION", temp);
-        environmentVars.put("PYNIDE_PACKAGE", BuildVars.PACKAGE_NAME);
-
-        temp = System.getenv("PATH");
-        environmentVars.put("PATH", String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp));
-        temp = System.getenv("LD_LIBRARY_PATH");
-        if (temp == null) {
-            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib", TerminalVars.PREFIX_PATH));
-        } else {
-            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp));
-        }
-        temp = String.format("%s/lib/terminal-exec.so", TerminalVars.PREFIX_PATH);
-        if (FileUtils.isFileExists(temp)) {
-            environmentVars.put("LD_PRELOAD", temp);
-        }
-        return MapsKt.toSortedMap(environmentVars);
-    }
-
-    public static String getFontStyle() {
-        return IDESettings.getPreferences().getString(KEY_FONT_STYLE, DEFAULT_FONT_STYLE);
-    }
-
-    public static int getFontSizePx() {
-        return SizeUtils.sp2px(getFontSize());
-    }
-
-    public static int getFontSize() {
-        return IDESettings.getPreferences().getInt(KEY_FONT_SIZE, 14);
-    }
-
-    public static boolean isKeepScreenOn() {
-        return IDESettings.getPreferences().getBoolean(KEY_KEEP_SCREEN_ON, true);
+    public static TerminalSession createSession(@Nullable final TerminalSessionClient sessionClient) {
+        return createSession(null, null, null, sessionClient);
     }
 }

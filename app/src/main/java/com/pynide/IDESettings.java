@@ -24,8 +24,8 @@ public class IDESettings {
     }
 
     @NonNull
-    private static Context getSettingsStorageContext(@NonNull Context context) {
-        Context storageContext = context.createDeviceProtectedStorageContext();
+    private static Context getSettingsStorageContext(@NonNull final Context context) {
+        var storageContext = context.createDeviceProtectedStorageContext();
         storageContext = new ContextWrapper(storageContext) {
             @Override
             public SharedPreferences getSharedPreferences(String name, int mode) {
@@ -39,7 +39,7 @@ public class IDESettings {
         return storageContext;
     }
 
-    public static void initialize(Context context) {
+    public static void initialize(@NonNull final Context context) {
         if (sPreferences == null) {
             sPreferences = getSettingsStorageContext(context)
                     .getSharedPreferences(NAME, Context.MODE_PRIVATE);
@@ -52,7 +52,7 @@ public class IDESettings {
     }
 
     public static Locale getLocale() {
-        String tag = getPreferences().getString(LANGUAGE, null);
+        final var tag = getPreferences().getString(LANGUAGE, null);
         if (TextUtils.isEmpty(tag) || "SYSTEM".equals(tag)) {
             return Locale.getDefault();
         }

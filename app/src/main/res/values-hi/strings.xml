@@ -23,7 +23,8 @@
     <string name="about">के बारे में</string>
     <string name="version">संस्करण</string>
     <string name="github">गिटहब</string>
-    <string name="licenses">लाइसेंस</string>
+    <string name="oss_licenses">ओपन सोर्स लाइसेंस</string>
+    <string name="report_bug">रिपोर्ट बग</string>
 
     <string name="ten_sp">10 एसपी</string>
     <string name="twelve_sp">12 एसपी</string>

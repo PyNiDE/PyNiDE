@@ -49,7 +49,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var terminalFontStylePreference: ListPreference
     private lateinit var aboutVersionPreference: Preference
     private lateinit var aboutGithubPreference: Preference
-    private lateinit var aboutLicencesPreference: Preference
+    private lateinit var aboutReportBugPreference: Preference
+    private lateinit var aboutOssLicencesPreference: Preference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.setStorageDeviceProtected()
@@ -66,7 +67,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalFontStylePreference = findPreference(KEY_TERMINAL_FONT_STYLE)!!
         aboutVersionPreference = findPreference("about_version")!!
         aboutGithubPreference = findPreference("about_github")!!
-        aboutLicencesPreference = findPreference("about_licenses")!!
+        aboutReportBugPreference = findPreference("about_report_bug")!!
+        aboutOssLicencesPreference = findPreference("about_oss_licenses")!!
 
         nightModePreference.value = IDESettings.getNightMode()
         nightModePreference.onPreferenceChangeListener =
@@ -124,6 +126,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setupLocalePreference()
 
         terminalKeepScreenOnPreference.isChecked = TerminalHelper.isKeepScreenOn()
+        terminalFontSizePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_SIZE)
         terminalFontSizePreference.value = TerminalHelper.getFontSize()
 
         setupTerminalFontStylePreference()

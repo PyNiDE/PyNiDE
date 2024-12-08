@@ -1,12 +1,13 @@
 package com.pynide.terminal;
 
-import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+
+import com.blankj.utilcode.util.Utils;
 
 import com.pynide.utils.FileLog;
 
@@ -21,11 +22,12 @@ public class BellHandler {
 
     private static volatile BellHandler instance = null;
 
-    public static BellHandler getInstance(Context context) {
+    public static BellHandler getInstance() {
         if (instance == null) {
             synchronized (lock) {
                 if (instance == null) {
-                    instance = new BellHandler((Vibrator) context.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE));
+                    final var vibratorService = Utils.getApp().getApplicationContext().getSystemService(Vibrator.class);
+                    instance = new BellHandler(vibratorService);
                 }
             }
         }
@@ -51,8 +53,8 @@ public class BellHandler {
     }
 
     public synchronized void doBell() {
-        long now = now();
-        long timeSinceLastBell = now - lastBell;
+        final var now = now();
+        final var timeSinceLastBell = now - lastBell;
 
         //noinspection StatementWithEmptyBody
         if (timeSinceLastBell < 0) {

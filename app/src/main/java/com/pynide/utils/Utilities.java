@@ -1,7 +1,11 @@
 package com.pynide.utils;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+
 public class Utilities {
-    public static String capitalize(final String value) {
+    @NonNull
+    public static String capitalize(@NonNull final String value) {
         var lastWhitespace = true;
         final var chars = value.toCharArray();
         for (int i = 0; i < chars.length; i++) {
@@ -13,5 +17,9 @@ public class Utilities {
             }
         }
         return new String(chars);
+    }
+
+    public static String toHexStringColor(@ColorInt final int color) {
+        return String.format("#%s", Integer.toHexString(color).substring(2));
     }
 }

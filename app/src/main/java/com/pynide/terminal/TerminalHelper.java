@@ -1,14 +1,19 @@
 package com.pynide.terminal;
 
+import android.graphics.Typeface;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.blankj.utilcode.util.FileUtils;
 import com.blankj.utilcode.util.SizeUtils;
+import com.blankj.utilcode.util.Utils;
 
 import com.pynide.BuildVars;
 import com.pynide.IDESettings;
 import com.pynide.utils.FileLog;
+import com.pynide.utils.Utilities;
 
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -17,10 +22,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import kotlin.collections.MapsKt;
 
@@ -50,8 +57,36 @@ public class TerminalHelper {
         return IDESettings.getPreferences().getString(KEY_FONT_STYLE, DEFAULT_FONT_STYLE);
     }
 
+    public static Typeface getTypeface() {
+        final var fontStyle = String.format("fonts/%s", getFontStyle());
+        return Typeface.createFromAsset(Utils.getApp().getAssets(), fontStyle);
+    }
+
     public static String getColorScheme() {
         return IDESettings.getPreferences().getString(KEY_COLOR_SCHEME, DEFAULT_COLOR_SCHEME);
+    }
+
+    public static Properties getColorSchemeProperties() throws IOException {
+        final var colorScheme = String.format("terminal/colors/%s", getColorScheme());
+        final var properties = new Properties();
+        try (final var in = Utils.getApp().getAssets().open(colorScheme)) {
+            properties.load(in);
+        }
+        return properties;
+    }
+
+    @NonNull
+    public static Map<String, String> getColorSchemeNames() throws IOException {
+        final var names = new HashMap<String, String>();
+        final var namesArray = Arrays.stream(Utils.getApp().getAssets().list("terminal/colors")).filter(s -> s.endsWith(".properties"));
+        namesArray.forEach(name -> {
+            var temp = name.replace('-', ' ');
+            final var dotIndex = temp.lastIndexOf('.');
+            if (dotIndex != -1) temp = temp.substring(0, dotIndex);
+            final var displayName = Utilities.capitalize(temp);
+            names.put(name, displayName);
+        });
+        return MapsKt.toSortedMap(names);
     }
 
     @NonNull
@@ -110,7 +145,7 @@ public class TerminalHelper {
     }
 
     @NonNull
-    public static SessionCommand createShellCommandArguments(@NonNull final String executablePath, @NonNull final String[] arguments, final boolean isLoginShell) {
+    public static Pair<String, String[]> createShellCommandArguments(@NonNull final String executablePath, @NonNull final String[] arguments, final boolean isLoginShell) {
         final var executable = new File(executablePath);
         String interpreter = null;
         try (final var in = new FileInputStream(executable)) {
@@ -172,7 +207,7 @@ public class TerminalHelper {
             actualArguments.add(executable.getAbsolutePath());
         }
         Collections.addAll(actualArguments, arguments);
-        return new SessionCommand(actualFileToExecute, actualArguments.toArray(new String[0]));
+        return Pair.create(actualFileToExecute, actualArguments.toArray(new String[0]));
     }
 
     @NonNull
@@ -187,11 +222,14 @@ public class TerminalHelper {
             }
         }
 
-        final var executablePath = executable == null ? "/system/bin/sh" : executable.getAbsolutePath();
+        var executablePath = executable == null ? "/system/bin/sh" : executable.getAbsolutePath();
         final var workingDirectoryPath = workingDirectory == null ? TerminalVars.HOME_PATH : workingDirectory.getAbsolutePath();
-        final var argumentsArray = arguments == null ? new String[0] : arguments.toArray(new String[0]);
+        var argumentsArray = arguments == null ? new String[0] : arguments.toArray(new String[0]);
         final var environmentVarsArray = createEnvironmentVarsArray();
+
         final var sessionCommand = createShellCommandArguments(executablePath, argumentsArray, isLoginShell);
+        executablePath = sessionCommand.first;
+        argumentsArray = sessionCommand.second;
 
         final var tempSessionClient = new TerminalSessionClient() {
             @Override
@@ -251,7 +289,7 @@ public class TerminalHelper {
             }
         };
 
-        final var newSession = new TerminalSession(sessionCommand.executablePath, workingDirectoryPath, sessionCommand.argumentsArray, environmentVarsArray, 4000, tempSessionClient);
+        final var newSession = new TerminalSession(executablePath, workingDirectoryPath, argumentsArray, environmentVarsArray, 4000, tempSessionClient);
         newSession.mSessionName = "Session";
         return newSession;
     }

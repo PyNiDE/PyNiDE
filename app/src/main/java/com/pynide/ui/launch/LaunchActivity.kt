@@ -5,7 +5,6 @@ import android.view.Menu
 import android.view.MenuItem
 
 import androidx.activity.enableEdgeToEdge
-import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 import com.blankj.utilcode.util.ActivityUtils
@@ -15,6 +14,8 @@ import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityLaunchBinding
 import com.pynide.ui.settings.SettingsActivity
 import com.pynide.ui.terminal.TerminalActivity
+import com.pynide.ui.terminal.TerminalActivity.Companion.KEY_TERMINAL_SESSION_TYPE
+import com.pynide.ui.terminal.TerminalSessionType
 import com.pynide.utils.AndroidUtilities
 
 @Suppress("CustomSplashScreen")
@@ -42,7 +43,9 @@ class LaunchActivity : IDEActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_terminal -> {
-                val extras = bundleOf(TerminalActivity.KEY_IS_TERMINAL to true)
+                val extras = Bundle().apply {
+                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.SHELL)
+                }
                 ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
             }
 
@@ -51,7 +54,9 @@ class LaunchActivity : IDEActivity() {
             }
 
             R.id.action_interpreter -> {
-                val extras = bundleOf(TerminalActivity.KEY_IS_TERMINAL to false)
+                val extras = Bundle().apply {
+                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.PYTHON)
+                }
                 ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
             }
         }

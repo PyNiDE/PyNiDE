@@ -27,14 +27,13 @@ import com.pynide.app.ThemeHelper.KEY_BLACK_NIGHT_THEME
 import com.pynide.app.ThemeHelper.KEY_DYNAMIC_COLORS
 import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
-import com.pynide.utils.FileLog
 import com.pynide.utils.LocaleDelegate
-import com.pynide.utils.Utilities
 
 import java.util.Locale
 
 import com.pynide.IDESettings.LANGUAGE as KEY_LANGUAGE
 import com.pynide.IDESettings.NIGHT_MODE as KEY_NIGHT_MODE
+import com.pynide.terminal.TerminalHelper.KEY_COLOR_SCHEME as KEY_TERMINAL_COLOR_SCHEME
 import com.pynide.terminal.TerminalHelper.KEY_FONT_SIZE as KEY_TERMINAL_FONT_SIZE
 import com.pynide.terminal.TerminalHelper.KEY_FONT_STYLE as KEY_TERMINAL_FONT_STYLE
 import com.pynide.terminal.TerminalHelper.KEY_KEEP_SCREEN_ON as KEY_TERMINAL_KEEP_SCREEN_ON
@@ -47,6 +46,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var terminalKeepScreenOnPreference: TwoStatePreference
     private lateinit var terminalFontSizePreference: IntegerSimpleMenuPreference
     private lateinit var terminalFontStylePreference: ListPreference
+    private lateinit var terminalColorSchemePreference: ListPreference
     private lateinit var aboutVersionPreference: Preference
     private lateinit var aboutGithubPreference: Preference
     private lateinit var aboutReportBugPreference: Preference
@@ -65,6 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalKeepScreenOnPreference = findPreference(KEY_TERMINAL_KEEP_SCREEN_ON)!!
         terminalFontSizePreference = findPreference(KEY_TERMINAL_FONT_SIZE)!!
         terminalFontStylePreference = findPreference(KEY_TERMINAL_FONT_STYLE)!!
+        terminalColorSchemePreference = findPreference(KEY_TERMINAL_COLOR_SCHEME)!!
         aboutVersionPreference = findPreference("about_version")!!
         aboutGithubPreference = findPreference("about_github")!!
         aboutReportBugPreference = findPreference("about_report_bug")!!
@@ -129,7 +130,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalFontSizePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_SIZE)
         terminalFontSizePreference.value = TerminalHelper.getFontSize()
 
+        terminalFontStylePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_STYLE)
         setupTerminalFontStylePreference()
+
+        terminalColorSchemePreference.setDefaultValue(TerminalHelper.DEFAULT_COLOR_SCHEME)
+        setupTerminalColorSchemePreference()
 
         aboutVersionPreference.summary =
             String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
@@ -147,46 +152,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupTerminalFontStylePreference() {
-        val fontStylesList = mutableListOf<String>()
-        val displayFontStylesList = mutableListOf<String>()
+        val fontsMap = AndroidUtilities.getFontNames()
+        val fonts = fontsMap.keys.toTypedArray()
+        val displayFonts = fontsMap.values.toTypedArray()
+        terminalFontStylePreference.entries = displayFonts
+        terminalFontStylePreference.entryValues = fonts
+    }
 
-        requireContext().assets.list("fonts")!!
-            .filter { it.endsWith(".ttf") }
-            .forEach { assetsName ->
-                fontStylesList.add(assetsName)
-                FileLog.d(assetsName)
-
-                var name = assetsName.replace('-', ' ')
-                val dotIndex = name.lastIndexOf('.')
-                if (dotIndex != -1) name = name.substring(0, dotIndex)
-                val displayName = Utilities.capitalize(name)
-                displayFontStylesList.add(displayName)
-            }
-
-        val fontStyles = fontStylesList.toTypedArray()
-        val displayFontStyles = displayFontStylesList.toTypedArray()
-
-        terminalFontStylePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_STYLE)
-        terminalFontStylePreference.entries = displayFontStyles
-        terminalFontStylePreference.entryValues = fontStyles
-
-        val currentFontStyleValue = terminalFontStylePreference.value
-        val currentFontStyleIndex = fontStyles.indexOf(currentFontStyleValue)
-        val currentFontStyle = TerminalHelper.getFontStyle()
-
-        terminalFontStylePreference.summary = when {
-            TextUtils.isEmpty(currentFontStyleValue) || "reddit" == currentFontStyleValue -> {
-                "Reddit"
-            }
-
-            currentFontStyleIndex != -1 -> {
-                displayFontStyles[currentFontStyleIndex]
-            }
-
-            else -> {
-                ""
-            }
-        }
+    private fun setupTerminalColorSchemePreference() {
+        val colorSchemesMap = TerminalHelper.getColorSchemeNames()
+        val colorSchemes = colorSchemesMap.keys.toTypedArray()
+        val displayColorSchemes = colorSchemesMap.values.toTypedArray()
+        terminalColorSchemePreference.entries = displayColorSchemes
+        terminalColorSchemePreference.entryValues = colorSchemes
     }
 
     private fun setupLocalePreference() {

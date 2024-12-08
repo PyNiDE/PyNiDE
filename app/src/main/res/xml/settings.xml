@@ -56,6 +56,13 @@
             app:key="terminal_font_style"
             app:summary="%s"
             app:title="@string/font_style" />
+
+        <rikka.preference.SimpleMenuPreference
+            app:defaultValue="material.properties"
+            app:icon="@drawable/ic_palette"
+            app:key="terminal_color_scheme"
+            app:summary="%s"
+            app:title="@string/color_scheme" />
     </PreferenceCategory>
 
     <PreferenceCategory

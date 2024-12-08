@@ -20,6 +20,7 @@
     <string name="keep_screen_on">स्क्रीन चालू रखें</string>
     <string name="font_size">फ़ॉन्ट आकार</string>
     <string name="font_style">फ़ॉन्ट शैली</string>
+    <string name="color_scheme">रंग योजना</string>
     <string name="about">के बारे में</string>
     <string name="version">संस्करण</string>
     <string name="github">गिटहब</string>

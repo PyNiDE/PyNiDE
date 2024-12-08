@@ -1,18 +1,18 @@
 package com.pynide.ui.terminal
 
-import android.graphics.Typeface
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-import android.view.View
-import android.view.Window
 
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 
@@ -26,6 +26,7 @@ import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.BellHandler
 import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
+import com.pynide.utils.Utilities
 
 import com.termux.terminal.TerminalColors
 import com.termux.terminal.TerminalSession
@@ -33,32 +34,43 @@ import com.termux.terminal.TerminalSessionClient
 import com.termux.terminal.TextStyle
 import com.termux.view.TerminalViewClient
 
-import java.util.Properties
-
 class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClient {
     private lateinit var binding: ActivityTerminalBinding
     private val progressBar get() = binding.progressBar
     private val terminalRootView get() = binding.terminalRootView
     private val terminalView get() = binding.terminalView
 
-    private var isTerminal: Boolean = true
-    private var isStarted: Boolean = true
     private val currentSession: TerminalSession? get() = terminalView.currentSession
+    private val colorsProperties = TerminalHelper.getColorSchemeProperties()
+    private lateinit var sessionType: TerminalSessionType
+    private var isStarted: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        isTerminal = intent.getBooleanExtra(KEY_IS_TERMINAL, true)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            sessionType = intent.getParcelableExtra(
+                KEY_TERMINAL_SESSION_TYPE, TerminalSessionType::class.java
+            )!!
+        } else {
+            @Suppress("DEPRECATION")
+            sessionType = intent.getParcelableExtra(KEY_TERMINAL_SESSION_TYPE)!!
+        }
 
         binding = ActivityTerminalBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        with(supportActionBar) {
-            this?.setDisplayHomeAsUpEnabled(true)
-            this?.setHomeAsUpIndicator(R.drawable.ic_close)
-        }
-        setTitle(if (isTerminal) R.string.terminal else R.string.interpreter)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
+        setTitle(
+            when (sessionType) {
+                TerminalSessionType.SHELL -> R.string.terminal
+                TerminalSessionType.PYTHON -> R.string.interpreter
+                else -> R.string.terminal
+            }
+        )
 
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -154,9 +166,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onCodePoint(
-        codePoint: Int,
-        ctrlDown: Boolean,
-        session: TerminalSession?
+        codePoint: Int, ctrlDown: Boolean, session: TerminalSession?
     ): Boolean {
         return false
     }
@@ -217,57 +227,6 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         return super.onOptionsItemSelected(item)
     }
 
-    private fun updateBackgroundColors() {
-        val decorView = window.decorView
-        val contentView = decorView.findViewById<View>(Window.ID_ANDROID_CONTENT)
-        val emulator = currentSession?.emulator ?: return
-        val backgroundColor = emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
-        decorView.setBackgroundColor(backgroundColor)
-        contentView.setBackgroundColor(backgroundColor)
-    }
-
-    @OptIn(ExperimentalStdlibApi::class)
-    private fun updateTerminalColors() {
-        val colorsProperties = Properties()
-        assets.open("terminal/colors/${TerminalHelper.DEFAULT_COLOR_SCHEME}").use {
-            colorsProperties.load(it)
-        }
-
-//        val decorView = window.decorView
-//        fun toHexColor(color: Int): String {
-//            return "#" + color.toHexString().substring(2)
-//        }
-//
-//        val systemBackgroundColor =
-//            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorSurface)
-//        val systemForegroundColor =
-//            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
-//
-//        colorsProperties["background"] = toHexColor(systemBackgroundColor)
-//        colorsProperties["foreground"] = toHexColor(systemForegroundColor)
-//        colorsProperties["cursor"] = toHexColor(systemForegroundColor)
-//        repeat(15) {
-//            colorsProperties["color$it"] = toHexColor(systemForegroundColor)
-//       }
-
-        TerminalColors.COLOR_SCHEME.updateWith(colorsProperties)
-        val emulator = currentSession?.emulator
-        emulator?.mColors?.reset()
-        updateBackgroundColors()
-
-        Typeface.createFromAsset(assets, "fonts/${TerminalHelper.DEFAULT_FONT_STYLE}").also(terminalView::setTypeface)
-    }
-
-    private fun setupTerminalView() {
-        terminalView.setTextSize(TerminalHelper.getFontSizePx())
-        terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
-        terminalView.setTerminalViewClient(this)
-        terminalView.attachSession(TerminalHelper.createSession(this))
-        updateTerminalColors()
-        terminalView.isVisible = true
-        terminalView.requestFocus()
-    }
-
     private fun onReset() {
 
     }
@@ -280,7 +239,58 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     }
 
+    private fun setupTerminalView() {
+        terminalView.setTextSize(TerminalHelper.getFontSizePx())
+        terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
+        terminalView.setTerminalViewClient(this)
+        terminalView.setTypeface(TerminalHelper.getTypeface())
+        terminalView.attachSession(TerminalHelper.createSession(this))
+        updateTerminalColors()
+        terminalView.isVisible = true
+        terminalView.requestFocus()
+    }
+
+    private fun updateTerminalColors() {
+//        val decorView = window.decorView
+//        val systemBackgroundColor =
+//            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorSurface)
+//        val systemForegroundColor =
+//            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
+//
+//        colorsProperties["background"] = Utilities.toHexStringColor(systemBackgroundColor)
+//        colorsProperties["foreground"] = Utilities.toHexStringColor(systemForegroundColor)
+//        colorsProperties["cursor"] = Utilities.toHexStringColor(systemForegroundColor)
+//        repeat(15) {
+//            colorsProperties["color$it"] = Utilities.toHexStringColor(systemForegroundColor)
+//        }
+
+        TerminalColors.COLOR_SCHEME.updateWith(colorsProperties)
+        val emulator = currentSession?.emulator
+        emulator?.mColors?.reset()
+        updateBackgroundColors()
+    }
+
+    private fun updateBackgroundColors() {
+        val emulator = currentSession?.emulator
+        val backgroundColor: Int = if (emulator != null) {
+            emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
+        } else {
+            val backgroundHexColor = colorsProperties["background"] as String
+            Color.parseColor(backgroundHexColor)
+        }
+        val isLightColor = MaterialColors.isColorLight(backgroundColor)
+
+        val decorView = window.decorView
+        decorView.setBackgroundColor(backgroundColor)
+        window.statusBarColor = backgroundColor
+        window.navigationBarColor = backgroundColor
+
+        val insetsController = WindowCompat.getInsetsController(window, decorView)
+        insetsController.isAppearanceLightNavigationBars = isLightColor
+        insetsController.isAppearanceLightStatusBars = isLightColor
+    }
+
     companion object {
-        const val KEY_IS_TERMINAL = "is_terminal"
+        const val KEY_TERMINAL_SESSION_TYPE = "terminal_session_type"
     }
 }

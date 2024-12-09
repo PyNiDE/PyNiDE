@@ -15,7 +15,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 
+import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ClipboardUtils
+import com.blankj.utilcode.util.IntentUtils
 
 import com.pynide.R
 import com.pynide.app.IDEActivity
@@ -60,10 +62,11 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
+
         setTitle(
             when (sessionType) {
-                TerminalSessionType.SHELL -> R.string.terminal
-                TerminalSessionType.PYTHON -> R.string.interpreter
+                TerminalSessionType.TERMINAL -> R.string.terminal
+                TerminalSessionType.INTERPRETER -> R.string.interpreter
                 else -> R.string.terminal
             }
         )
@@ -72,6 +75,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
             override fun handleOnBackPressed() {
                 if (terminalView.isSelectingText) {
                     terminalView.stopTextSelectionMode()
+                } else {
+                    finish()
                 }
             }
         })
@@ -224,15 +229,27 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun onReset() {
-
+        currentSession?.finishIfRunning()
+        terminalView.attachSession(TerminalHelper.createSession(this))
     }
 
     private fun onShareTranscript() {
-
+        val emulator = currentSession?.emulator ?: return
+        val buffer = emulator.screen ?: return
+        val transcript = buffer.transcriptTextWithoutJoinedLines.trim()
+        IntentUtils.getShareTextIntent(transcript).also { intent ->
+            ActivityUtils.startActivity(this, intent)
+        }
     }
 
     private fun onPaste() {
-
+        if (currentSession == null || currentSession?.isRunning == false) {
+            return
+        }
+        val text = ClipboardUtils.getText().toString().trim()
+        if (text.isNotEmpty() && currentSession?.emulator != null) {
+            currentSession!!.emulator!!.paste(text)
+        }
     }
 
     private fun setupTerminalView() {

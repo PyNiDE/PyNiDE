@@ -25,6 +25,7 @@ import com.pynide.R
 import com.pynide.app.ThemeHelper
 import com.pynide.app.ThemeHelper.KEY_BLACK_NIGHT_THEME
 import com.pynide.app.ThemeHelper.KEY_DYNAMIC_COLORS
+import com.pynide.editor.EditorHelper
 import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
 import com.pynide.utils.LocaleDelegate
@@ -154,7 +155,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupTerminalFontStylePreference() {
-        val fontsMap = AndroidUtilities.getFontNames()
+        val fontsMap = EditorHelper.getFontNames()
         val fonts = fontsMap.keys.toTypedArray()
         val displayFonts = fontsMap.values.toTypedArray()
         terminalFontStylePreference.entries = displayFonts

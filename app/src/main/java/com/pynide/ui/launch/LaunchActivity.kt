@@ -44,7 +44,7 @@ class LaunchActivity : IDEActivity() {
         when (item.itemId) {
             R.id.action_terminal -> {
                 val extras = Bundle().apply {
-                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.SHELL)
+                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.TERMINAL)
                 }
                 ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
             }
@@ -55,7 +55,7 @@ class LaunchActivity : IDEActivity() {
 
             R.id.action_interpreter -> {
                 val extras = Bundle().apply {
-                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.PYTHON)
+                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.INTERPRETER)
                 }
                 ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
             }

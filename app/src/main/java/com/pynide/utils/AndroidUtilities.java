@@ -20,12 +20,6 @@ import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.Utils;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import kotlin.collections.MapsKt;
 
 public class AndroidUtilities {
     public static void toggleIme(@Nullable final Window window, @Nullable final View view, final boolean show) {
@@ -83,20 +77,6 @@ public class AndroidUtilities {
         if (context == null) return false;
         final var configuration = context.getResources().getConfiguration();
         return isNightMode(configuration);
-    }
-
-    @NonNull
-    public static Map<String, String> getFontNames() throws IOException {
-        final var names = new HashMap<String, String>();
-        final var namesArray = Arrays.stream(Utils.getApp().getAssets().list("fonts")).filter(s -> s.endsWith(".ttf"));
-        namesArray.forEach(name -> {
-            var temp = name.replace('-', ' ');
-            final var dotIndex = temp.lastIndexOf('.');
-            if (dotIndex != -1) temp = temp.substring(0, dotIndex);
-            final var displayName = Utilities.capitalize(temp);
-            names.put(name, displayName);
-        });
-        return MapsKt.toSortedMap(names);
     }
 
     @Nullable

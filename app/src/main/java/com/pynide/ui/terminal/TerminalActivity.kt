@@ -12,13 +12,10 @@ import android.view.MotionEvent
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 
 import com.blankj.utilcode.util.ClipboardUtils
-
-import com.google.android.material.color.MaterialColors
 
 import com.pynide.R
 import com.pynide.app.IDEActivity
@@ -26,7 +23,6 @@ import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.BellHandler
 import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
-import com.pynide.utils.Utilities
 
 import com.termux.terminal.TerminalColors
 import com.termux.terminal.TerminalSession
@@ -272,22 +268,13 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     private fun updateBackgroundColors() {
         val emulator = currentSession?.emulator
-        val backgroundColor: Int = if (emulator != null) {
+        val backgroundColor = if (emulator != null) {
             emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
         } else {
-            val backgroundHexColor = colorsProperties["background"] as String
-            Color.parseColor(backgroundHexColor)
+            val backgroundHexColor = colorsProperties["background"] as String?
+            if (backgroundHexColor == null) Color.BLACK else Color.parseColor(backgroundHexColor)
         }
-        val isLightColor = MaterialColors.isColorLight(backgroundColor)
-
-        val decorView = window.decorView
-        decorView.setBackgroundColor(backgroundColor)
-        window.statusBarColor = backgroundColor
-        window.navigationBarColor = backgroundColor
-
-        val insetsController = WindowCompat.getInsetsController(window, decorView)
-        insetsController.isAppearanceLightNavigationBars = isLightColor
-        insetsController.isAppearanceLightStatusBars = isLightColor
+        terminalRootView.setBackgroundColor(backgroundColor)
     }
 
     companion object {

@@ -145,7 +145,7 @@ public class TerminalHelper {
     }
 
     @NonNull
-    public static Pair<String, String[]> createShellCommandArguments(@NonNull final String executablePath, @NonNull final String[] arguments, final boolean isLoginShell) {
+    public static Pair<String, String[]> createShellCommandArguments(@NonNull final String executablePath, @NonNull final String[] argumentsArray, final boolean isLoginShell) {
         final var executable = new File(executablePath);
         String interpreter = null;
         try (final var in = new FileInputStream(executable)) {
@@ -157,7 +157,7 @@ public class TerminalHelper {
                     // Elf file, do nothing.
                 } else if (buffer[0] == '#' && buffer[1] == '!') {
                     // Try to parse shebang.
-                    StringBuilder builder = new StringBuilder();
+                    final var builder = new StringBuilder();
                     for (int i = 2; i < bytesRead; i++) {
                         char c = (char) buffer[i];
                         if (c == ' ' || c == '\n') {
@@ -206,7 +206,7 @@ public class TerminalHelper {
         if (interpreter != null) {
             actualArguments.add(executable.getAbsolutePath());
         }
-        Collections.addAll(actualArguments, arguments);
+        Collections.addAll(actualArguments, argumentsArray);
         return Pair.create(actualFileToExecute, actualArguments.toArray(new String[0]));
     }
 

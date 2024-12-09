@@ -131,9 +131,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalFontSizePreference.value = TerminalHelper.getFontSize()
 
         terminalFontStylePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_STYLE)
+        terminalFontStylePreference.value = TerminalHelper.getFontStyle()
         setupTerminalFontStylePreference()
 
         terminalColorSchemePreference.setDefaultValue(TerminalHelper.DEFAULT_COLOR_SCHEME)
+        terminalColorSchemePreference.value = TerminalHelper.getColorScheme()
         setupTerminalColorSchemePreference()
 
         aboutVersionPreference.summary =

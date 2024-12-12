@@ -1,8 +1,11 @@
 package com.pynide.ui.terminal
 
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.Menu
@@ -11,12 +14,14 @@ import android.view.MotionEvent
 
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ClipboardUtils
+import com.blankj.utilcode.util.ColorUtils
 import com.blankj.utilcode.util.IntentUtils
 
 import com.pynide.R
@@ -24,6 +29,8 @@ import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.BellHandler
 import com.pynide.terminal.TerminalHelper
+import com.pynide.terminal.TerminalService
+import com.pynide.terminal.TerminalVars
 import com.pynide.utils.AndroidUtilities
 
 import com.termux.terminal.TerminalColors
@@ -32,29 +39,25 @@ import com.termux.terminal.TerminalSessionClient
 import com.termux.terminal.TextStyle
 import com.termux.view.TerminalViewClient
 
-class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClient {
+class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClient,
+    ServiceConnection {
     private lateinit var binding: ActivityTerminalBinding
     private val progressBar get() = binding.progressBar
     private val terminalRootView get() = binding.terminalRootView
     private val terminalView get() = binding.terminalView
 
     private val currentSession: TerminalSession? get() = terminalView.currentSession
-    private val colorsProperties = TerminalHelper.getColorSchemeProperties()
-    private lateinit var sessionType: TerminalSessionType
+    private var terminalType = TerminalVars.TERMINAL_TYPE_SHELL
+    private var terminalService: TerminalService? = null
     private var isStarted: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            sessionType = intent.getParcelableExtra(
-                KEY_TERMINAL_SESSION_TYPE, TerminalSessionType::class.java
-            )!!
-        } else {
-            @Suppress("DEPRECATION")
-            sessionType = intent.getParcelableExtra(KEY_TERMINAL_SESSION_TYPE)!!
-        }
+        intent.getIntExtra(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_SHELL)
+            .also { type ->
+                terminalType = type
+            }
 
         binding = ActivityTerminalBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -64,9 +67,9 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
 
         setTitle(
-            when (sessionType) {
-                TerminalSessionType.TERMINAL -> R.string.terminal
-                TerminalSessionType.INTERPRETER -> R.string.interpreter
+            when (terminalType) {
+                TerminalVars.TERMINAL_TYPE_SHELL -> R.string.terminal
+                TerminalVars.TERMINAL_TYPE_PYTHON -> R.string.interpreter
                 else -> R.string.terminal
             }
         )
@@ -82,25 +85,74 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         })
 
         setupTerminalView()
-
         ViewCompat.setOnApplyWindowInsetsListener(terminalRootView) { _, insets ->
             val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
             AndroidUtilities.toggleActionBar(supportActionBar, !imeVisible)
             WindowInsetsCompat.CONSUMED
         }
 
-        progressBar.isVisible = false
+        Intent(this, TerminalService::class.java).also { intent ->
+            ContextCompat.startForegroundService(this, intent)
+            if (!bindService(intent, this, BIND_AUTO_CREATE)) {
+                throw RuntimeException("bindService() failed")
+            }
+        }
+    }
+
+    override fun onServiceConnected(componentName: ComponentName?, service: IBinder) {
+        terminalService = (service as TerminalService.LocalBinder).terminalService
+
+        val createdSession = terminalService!!.getOrCreateTerminalSession(terminalType)
+        setCurrentSession(createdSession)
+        progressBar.hide()
+
+        terminalService!!.setTerminalSessionClient(this)
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        finish()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.terminal, menu)
+        AndroidUtilities.setOptionalIcons(menu, true)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_reset -> onReset()
+            R.id.action_share_transcript -> onShareTranscript()
+            R.id.action_paste -> onPaste()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onStart() {
         super.onStart()
         isStarted = true
+        terminalService?.let { service ->
+            setCurrentSession(service.getOrCreateTerminalSession(terminalType))
+        }
         terminalView.onScreenUpdated()
     }
 
     override fun onStop() {
-        super.onStop()
         isStarted = false
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        terminalService?.let {
+            terminalService!!.unsetTerminalSessionClient()
+            terminalService = null
+        }
+        try {
+            unbindService(this)
+        } catch (_: Throwable) {
+
+        }
+        super.onDestroy()
     }
 
     override fun onScale(scale: Float): Float {
@@ -108,7 +160,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onSingleTapUp(e: MotionEvent?) {
-        val emulator = currentSession?.emulator ?: return
+        val session = currentSession ?: return
+        val emulator = session.emulator ?: return
         if (!emulator.isMouseTrackingActive && e?.isFromSource(InputDevice.SOURCE_MOUSE) == false) {
             AndroidUtilities.showIme(window, terminalView)
         }
@@ -132,7 +185,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_ENTER && session?.isRunning == false) {
-            finish()
+            removeFinishedSession(session)
             return true
         }
         return false
@@ -173,7 +226,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onTextChanged(changedSession: TerminalSession) {
-        if (isStarted) {
+        if (isStarted && currentSession == changedSession) {
             terminalView.onScreenUpdated()
         }
     }
@@ -183,7 +236,13 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onSessionFinished(finishedSession: TerminalSession) {
-
+        if (terminalService == null || terminalService?.wantsToStop == true) {
+            finish()
+            return
+        }
+        if ((finishedSession.exitStatus == 0 || finishedSession.exitStatus == 130)) {
+            removeFinishedSession(finishedSession)
+        }
     }
 
     override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
@@ -213,28 +272,13 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.terminal, menu)
-        AndroidUtilities.setOptionalIcons(menu, true)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_reset -> onReset()
-            R.id.action_share_transcript -> onShareTranscript()
-            R.id.action_paste -> onPaste()
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
     private fun onReset() {
-        currentSession?.finishIfRunning()
-        terminalView.attachSession(TerminalHelper.createSession(this))
+        // TODO
     }
 
     private fun onShareTranscript() {
-        val emulator = currentSession?.emulator ?: return
+        val session = currentSession ?: return
+        val emulator = session.emulator ?: return
         val buffer = emulator.screen ?: return
         val transcript = buffer.transcriptTextWithoutJoinedLines.trim()
         IntentUtils.getShareTextIntent(transcript).also { intent ->
@@ -243,21 +287,21 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun onPaste() {
-        if (currentSession == null || currentSession?.isRunning == false) {
+        val session = currentSession
+        if (session == null || !session.isRunning) {
             return
         }
         val text = ClipboardUtils.getText().toString().trim()
-        if (text.isNotEmpty() && currentSession?.emulator != null) {
-            currentSession!!.emulator!!.paste(text)
+        if (text.isNotEmpty() && session.emulator != null) {
+            session.emulator.paste(text)
         }
     }
 
     private fun setupTerminalView() {
         terminalView.setTextSize(TerminalHelper.getFontSizePx())
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
-        terminalView.setTerminalViewClient(this)
         terminalView.setTypeface(TerminalHelper.getTypeface())
-        terminalView.attachSession(TerminalHelper.createSession(this))
+        terminalView.setTerminalViewClient(this)
         updateTerminalColors()
         terminalView.isVisible = true
         terminalView.requestFocus()
@@ -270,31 +314,45 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 //        val systemForegroundColor =
 //            MaterialColors.getColor(decorView, com.google.android.material.R.attr.colorOnSurface)
 //
-//        colorsProperties["background"] = Utilities.toHexStringColor(systemBackgroundColor)
-//        colorsProperties["foreground"] = Utilities.toHexStringColor(systemForegroundColor)
-//        colorsProperties["cursor"] = Utilities.toHexStringColor(systemForegroundColor)
+//        val colorsProperties = TerminalHelper.getColorSchemeProperties()
+//        colorsProperties["background"] = ColorUtils.int2RgbString(systemBackgroundColor)
+//        colorsProperties["foreground"] = ColorUtils.int2RgbString(systemForegroundColor)
+//        colorsProperties["cursor"] = ColorUtils.int2RgbString(systemForegroundColor)
 //        repeat(15) {
-//            colorsProperties["color$it"] = Utilities.toHexStringColor(systemForegroundColor)
+//            colorsProperties["color$it"] = ColorUtils.int2RgbString(systemForegroundColor)
 //        }
 
+        val colorsProperties = TerminalHelper.getColorSchemeProperties()
         TerminalColors.COLOR_SCHEME.updateWith(colorsProperties)
-        val emulator = currentSession?.emulator
+        val session = currentSession
+        val emulator = session?.emulator
         emulator?.mColors?.reset()
         updateBackgroundColors()
     }
 
     private fun updateBackgroundColors() {
-        val emulator = currentSession?.emulator
-        val backgroundColor = if (emulator != null) {
-            emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
-        } else {
-            val backgroundHexColor = colorsProperties["background"] as String?
-            if (backgroundHexColor == null) Color.BLACK else Color.parseColor(backgroundHexColor)
+        if (isStarted) {
+            val session = currentSession
+            val emulator = session?.emulator
+            val backgroundColor = if (emulator != null) {
+                emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
+            } else {
+                val colorsProperties = TerminalHelper.getColorSchemeProperties()
+                val backgroundHexColor = colorsProperties["background"] as String?
+                if (backgroundHexColor != null) {
+                    ColorUtils.string2Int(backgroundHexColor)
+                } else Color.BLACK
+            }
+            terminalRootView.setBackgroundColor(backgroundColor)
         }
-        terminalRootView.setBackgroundColor(backgroundColor)
     }
 
-    companion object {
-        const val KEY_TERMINAL_SESSION_TYPE = "terminal_session_type"
+    private fun setCurrentSession(session: TerminalSession) {
+        terminalView.attachSession(session)
+        updateBackgroundColors()
+    }
+
+    private fun removeFinishedSession(finishedSession: TerminalSession) {
+
     }
 }

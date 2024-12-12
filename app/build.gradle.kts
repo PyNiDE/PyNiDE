@@ -3,7 +3,6 @@
 plugins {
     alias(libs.plugins.application)
     alias(libs.plugins.kotlin)
-    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.themebuilder)
     alias(libs.plugins.autoresconfig)
 }

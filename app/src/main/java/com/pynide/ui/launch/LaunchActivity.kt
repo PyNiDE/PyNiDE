@@ -12,10 +12,9 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.pynide.R
 import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityLaunchBinding
+import com.pynide.terminal.TerminalVars
 import com.pynide.ui.settings.SettingsActivity
 import com.pynide.ui.terminal.TerminalActivity
-import com.pynide.ui.terminal.TerminalActivity.Companion.KEY_TERMINAL_SESSION_TYPE
-import com.pynide.ui.terminal.TerminalSessionType
 import com.pynide.utils.AndroidUtilities
 
 @Suppress("CustomSplashScreen")
@@ -42,24 +41,28 @@ class LaunchActivity : IDEActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_terminal -> {
-                val extras = Bundle().apply {
-                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.TERMINAL)
-                }
-                ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
-            }
-
-            R.id.action_settings -> {
-                ActivityUtils.startActivity(this, SettingsActivity::class.java)
-            }
-
-            R.id.action_interpreter -> {
-                val extras = Bundle().apply {
-                    putParcelable(KEY_TERMINAL_SESSION_TYPE, TerminalSessionType.INTERPRETER)
-                }
-                ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
-            }
+            R.id.action_terminal -> startTerminal()
+            R.id.action_settings -> startSettings()
+            R.id.action_interpreter -> startInterpreter()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun startTerminal() {
+        val extras = Bundle().apply {
+            putInt(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_SHELL)
+        }
+        ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
+    }
+
+    private fun startSettings() {
+        ActivityUtils.startActivity(this, SettingsActivity::class.java)
+    }
+
+    private fun startInterpreter() {
+        val extras = Bundle().apply {
+            putInt(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_PYTHON)
+        }
+        ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
     }
 }

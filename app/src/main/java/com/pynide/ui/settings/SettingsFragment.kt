@@ -155,17 +155,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupTerminalFontStylePreference() {
-        val fontsMap = EditorHelper.getFontNames()
-        val fonts = fontsMap.keys.toTypedArray()
-        val displayFonts = fontsMap.values.toTypedArray()
+        val allFonts = EditorHelper.getAllFontNames()
+        val fonts = allFonts.keys.toTypedArray()
+        val displayFonts = allFonts.values.toTypedArray()
         terminalFontStylePreference.entries = displayFonts
         terminalFontStylePreference.entryValues = fonts
     }
 
     private fun setupTerminalColorSchemePreference() {
-        val colorSchemesMap = TerminalHelper.getColorSchemeNames()
-        val colorSchemes = colorSchemesMap.keys.toTypedArray()
-        val displayColorSchemes = colorSchemesMap.values.toTypedArray()
+        val allColorSchemes = TerminalHelper.getAllColorSchemeNames()
+        val colorSchemes = allColorSchemes.keys.toTypedArray()
+        val displayColorSchemes = allColorSchemes.values.toTypedArray()
         terminalColorSchemePreference.entries = displayColorSchemes
         terminalColorSchemePreference.entryValues = colorSchemes
     }

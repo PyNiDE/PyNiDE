@@ -15,7 +15,7 @@ import kotlin.collections.MapsKt;
 
 public class EditorHelper {
     @NonNull
-    public static Map<String, String> getFontNames() throws IOException {
+    public static Map<String, String> getAllFontNames() throws IOException {
         final var names = new HashMap<String, String>();
         final var namesArray = Arrays.stream(Utils.getApp().getAssets().list("fonts")).filter(s -> s.endsWith(".ttf"));
         namesArray.forEach(name -> {

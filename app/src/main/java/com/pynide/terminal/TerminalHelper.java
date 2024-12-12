@@ -76,7 +76,7 @@ public class TerminalHelper {
     }
 
     @NonNull
-    public static Map<String, String> getColorSchemeNames() throws IOException {
+    public static Map<String, String> getAllColorSchemeNames() throws IOException {
         final var names = new HashMap<String, String>();
         final var namesArray = Arrays.stream(Utils.getApp().getAssets().list("terminal/colors")).filter(s -> s.endsWith(".properties"));
         namesArray.forEach(name -> {
@@ -211,13 +211,12 @@ public class TerminalHelper {
     }
 
     @NonNull
-    public static TerminalSession createSession(@Nullable File executable, @Nullable final File workingDirectory, @Nullable final List<String> arguments, @Nullable final TerminalSessionClient sessionClient) {
+    public static TerminalSession createSession(@Nullable File executable, @Nullable final File workingDirectory, @Nullable final List<String> arguments, @NonNull final TerminalSessionClient sessionClient) {
         final var isLoginShell = executable == null;
 
         if (executable == null) {
             final var shell = new File(TerminalVars.PREFIX_PATH, "bin/sh");
             if (FileUtils.isFileExists(shell)) {
-                if (!shell.canExecute()) shell.setExecutable(true);
                 executable = shell;
             }
         }
@@ -231,71 +230,8 @@ public class TerminalHelper {
         executablePath = sessionCommand.first;
         argumentsArray = sessionCommand.second;
 
-        final var tempSessionClient = new TerminalSessionClient() {
-            @Override
-            public void onTextChanged(@NonNull TerminalSession changedSession) {
-                if (sessionClient != null) {
-                    sessionClient.onTextChanged(changedSession);
-                }
-            }
-
-            @Override
-            public void onTitleChanged(@NonNull TerminalSession changedSession) {
-                if (sessionClient != null) {
-                    sessionClient.onTitleChanged(changedSession);
-                }
-            }
-
-            @Override
-            public void onSessionFinished(@NonNull TerminalSession finishedSession) {
-                if (sessionClient != null) {
-                    sessionClient.onSessionFinished(finishedSession);
-                }
-            }
-
-            @Override
-            public void onCopyTextToClipboard(@NonNull TerminalSession session, String text) {
-                if (sessionClient != null) {
-                    sessionClient.onCopyTextToClipboard(session, text);
-                }
-            }
-
-            @Override
-            public void onPasteTextFromClipboard(@Nullable TerminalSession session) {
-                if (sessionClient != null) {
-                    sessionClient.onPasteTextFromClipboard(session);
-                }
-            }
-
-            @Override
-            public void onBell(@NonNull TerminalSession session) {
-                if (sessionClient != null) {
-                    sessionClient.onBell(session);
-                }
-            }
-
-            @Override
-            public void onColorsChanged(@NonNull TerminalSession session) {
-                if (sessionClient != null) {
-                    sessionClient.onColorsChanged(session);
-                }
-            }
-
-            @Override
-            public void onTerminalCursorStateChange(boolean state) {
-                if (sessionClient != null) {
-                    sessionClient.onTerminalCursorStateChange(state);
-                }
-            }
-        };
-
-        final var newSession = new TerminalSession(executablePath, workingDirectoryPath, argumentsArray, environmentVarsArray, 4000, tempSessionClient);
+        final var newSession = new TerminalSession(executablePath, workingDirectoryPath, argumentsArray, environmentVarsArray, 4000, sessionClient);
         newSession.mSessionName = "Session";
         return newSession;
-    }
-
-    @NonNull
-    public static TerminalSession createSession(@Nullable final TerminalSessionClient sessionClient) {
-        return createSession(null, null, null, sessionClient);
     }
 }

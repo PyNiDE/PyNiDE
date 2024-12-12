@@ -1,6 +1,5 @@
 package com.pynide.utils;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
 public class Utilities {
@@ -17,9 +16,5 @@ public class Utilities {
             }
         }
         return new String(chars);
-    }
-
-    public static String toHexStringColor(@ColorInt final int color) {
-        return String.format("#%s", Integer.toHexString(color).substring(2));
     }
 }

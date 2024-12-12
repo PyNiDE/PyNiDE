@@ -302,7 +302,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
         terminalView.setTypeface(TerminalHelper.getTypeface())
         terminalView.setTerminalViewClient(this)
-        updateTerminalColors()
+        updateBackgroundColors()
         terminalView.isVisible = true
         terminalView.requestFocus()
     }
@@ -349,7 +349,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     private fun setCurrentSession(session: TerminalSession) {
         terminalView.attachSession(session)
-        updateBackgroundColors()
+        updateTerminalColors()
     }
 
     private fun removeFinishedSession(finishedSession: TerminalSession) {

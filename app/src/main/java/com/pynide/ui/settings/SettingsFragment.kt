@@ -17,6 +17,7 @@ import androidx.preference.TwoStatePreference
 import androidx.recyclerview.widget.RecyclerView
 
 import com.blankj.utilcode.util.SizeUtils
+import com.blankj.utilcode.util.ToastUtils
 
 import com.pynide.BuildVars
 import com.pynide.IDELocales
@@ -139,8 +140,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalColorSchemePreference.value = TerminalHelper.getColorScheme()
         setupTerminalColorSchemePreference()
 
-        aboutVersionPreference.summary =
-            String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
+        val temp = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
+        aboutVersionPreference.summary = temp
+
+        aboutGithubPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            ToastUtils.showShort(R.string.coming_soon)
+            true
+        }
+
+        aboutReportBugPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            ToastUtils.showShort(R.string.coming_soon)
+            true
+        }
+
+        aboutOssLicencesPreference.onPreferenceClickListener =
+            Preference.OnPreferenceClickListener {
+                ToastUtils.showShort(R.string.coming_soon)
+                true
+            }
     }
 
     override fun onCreateRecyclerView(
@@ -155,17 +172,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupTerminalFontStylePreference() {
-        val allFonts = EditorHelper.getAllFontNames()
-        val fonts = allFonts.keys.toTypedArray()
-        val displayFonts = allFonts.values.toTypedArray()
+        val allNames = EditorHelper.getAllFontNames()
+        val fonts = allNames.keys.toTypedArray()
+        val displayFonts = allNames.values.toTypedArray()
         terminalFontStylePreference.entries = displayFonts
         terminalFontStylePreference.entryValues = fonts
     }
 
     private fun setupTerminalColorSchemePreference() {
-        val allColorSchemes = TerminalHelper.getAllColorSchemeNames()
-        val colorSchemes = allColorSchemes.keys.toTypedArray()
-        val displayColorSchemes = allColorSchemes.values.toTypedArray()
+        val allNames = TerminalHelper.getAllColorSchemeNames()
+        val colorSchemes = allNames.keys.toTypedArray()
+        val displayColorSchemes = allNames.values.toTypedArray()
         terminalColorSchemePreference.entries = displayColorSchemes
         terminalColorSchemePreference.entryValues = colorSchemes
     }

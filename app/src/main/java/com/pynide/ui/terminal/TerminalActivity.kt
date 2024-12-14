@@ -47,17 +47,14 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     private val terminalView get() = binding.terminalView
 
     private val currentSession: TerminalSession? get() = terminalView.currentSession
-    private var terminalType = TerminalVars.TERMINAL_TYPE_SHELL
+    private var terminalType: Int = TerminalVars.TERMINAL_TYPE_DEFAULT
     private var terminalService: TerminalService? = null
     private var isStarted: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        intent.getIntExtra(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_SHELL)
-            .also { type ->
-                terminalType = type
-            }
+        setupTerminalData()
 
         binding = ActivityTerminalBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -68,8 +65,9 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
         setTitle(
             when (terminalType) {
-                TerminalVars.TERMINAL_TYPE_SHELL -> R.string.terminal
-                TerminalVars.TERMINAL_TYPE_PYTHON -> R.string.interpreter
+                TerminalVars.TERMINAL_TYPE_DEFAULT -> R.string.terminal
+                TerminalVars.TERMINAL_TYPE_INTERPRETER -> R.string.interpreter
+                TerminalVars.TERMINAL_TYPE_CONSOLE -> R.string.console
                 else -> R.string.terminal
             }
         )
@@ -101,11 +99,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onServiceConnected(componentName: ComponentName?, service: IBinder) {
         terminalService = (service as TerminalService.LocalBinder).terminalService
-
-        val createdSession = terminalService!!.getOrCreateTerminalSession(terminalType)
-        setCurrentSession(createdSession)
+        setCurrentSession(getOrCreateSession())
         progressBar.hide()
-
         terminalService!!.setTerminalSessionClient(this)
     }
 
@@ -131,9 +126,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     override fun onStart() {
         super.onStart()
         isStarted = true
-        terminalService?.let { service ->
-            setCurrentSession(service.getOrCreateTerminalSession(terminalType))
-        }
+        setCurrentSession(getOrCreateSession())
         terminalView.onScreenUpdated()
     }
 
@@ -143,7 +136,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onDestroy() {
-        terminalService?.let {
+        if (terminalService != null) {
             terminalService!!.unsetTerminalSessionClient()
             terminalService = null
         }
@@ -186,6 +179,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_ENTER && session?.isRunning == false) {
             removeFinishedSession(session)
+            finish()
             return true
         }
         return false
@@ -265,7 +259,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onColorsChanged(session: TerminalSession) {
-        updateBackgroundColors()
+        updateTerminalBackgroundColors()
     }
 
     override fun onTerminalCursorStateChange(state: Boolean) {
@@ -287,22 +281,21 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun onPaste() {
-        val session = currentSession
-        if (session == null || !session.isRunning) {
-            return
-        }
-        val text = ClipboardUtils.getText().toString().trim()
-        if (text.isNotEmpty() && session.emulator != null) {
-            session.emulator.paste(text)
+        val session = currentSession ?: return
+        if (session.isRunning) {
+            val text = ClipboardUtils.getText().toString().trim()
+            if (text.isNotEmpty() && session.emulator != null) {
+                session.emulator.paste(text)
+            }
         }
     }
 
     private fun setupTerminalView() {
         terminalView.setTextSize(TerminalHelper.getFontSizePx())
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
-        terminalView.setTypeface(TerminalHelper.getTypeface())
+        terminalView.setTypeface(TerminalHelper.getFontStyleTypeface())
         terminalView.setTerminalViewClient(this)
-        updateBackgroundColors()
+        updateTerminalBackgroundColors()
         terminalView.isVisible = true
         terminalView.requestFocus()
     }
@@ -327,32 +320,44 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         val session = currentSession
         val emulator = session?.emulator
         emulator?.mColors?.reset()
-        updateBackgroundColors()
+        updateTerminalBackgroundColors()
     }
 
-    private fun updateBackgroundColors() {
-        if (isStarted) {
-            val session = currentSession
-            val emulator = session?.emulator
-            val backgroundColor = if (emulator != null) {
-                emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
-            } else {
-                val colorsProperties = TerminalHelper.getColorSchemeProperties()
-                val backgroundHexColor = colorsProperties["background"] as String?
-                if (backgroundHexColor != null) {
-                    ColorUtils.string2Int(backgroundHexColor)
-                } else Color.BLACK
-            }
-            terminalRootView.setBackgroundColor(backgroundColor)
+    private fun updateTerminalBackgroundColors() {
+        val session = currentSession
+        val emulator = session?.emulator
+        val backgroundColor = if (emulator != null) {
+            emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]
+        } else {
+            val colorsProperties = TerminalHelper.getColorSchemeProperties()
+            val backgroundHexColor = colorsProperties["background"] as String?
+            if (backgroundHexColor != null) {
+                ColorUtils.string2Int(backgroundHexColor)
+            } else Color.BLACK
+        }
+        terminalRootView.setBackgroundColor(backgroundColor)
+    }
+
+    private fun setCurrentSession(session: TerminalSession?) {
+        if (session != null) {
+            terminalView.attachSession(session)
+            updateTerminalColors()
         }
     }
 
-    private fun setCurrentSession(session: TerminalSession) {
-        terminalView.attachSession(session)
-        updateTerminalColors()
+    private fun removeFinishedSession(finishedSession: TerminalSession?) {
+        val service = terminalService ?: return
+        service.removeTerminalSession(finishedSession)
     }
 
-    private fun removeFinishedSession(finishedSession: TerminalSession) {
+    private fun setupTerminalData() {
+        intent ?: return
+        terminalType =
+            intent.getIntExtra(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_DEFAULT)
+    }
 
+    private fun getOrCreateSession(): TerminalSession? {
+        val service = terminalService ?: return null
+        return service.getOrCreateTerminalSession(terminalType, null, null, null)
     }
 }

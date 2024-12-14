@@ -6,4 +6,6 @@
                 For example, a user might start a web server that serves HTML pages and then interact with that from the browser app while the IDE
                 app is in the background. If the system were to interrupt or defer the IDE app while it is in the background the user
                 experience would be negatively affected since the above described use case would be broken.</string>
+
+    <string name="session_is_running" translatable="false">Session is running</string>
 </resources>

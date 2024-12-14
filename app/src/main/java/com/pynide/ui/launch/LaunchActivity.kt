@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 
 import androidx.activity.enableEdgeToEdge
+import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 import com.blankj.utilcode.util.ActivityUtils
@@ -49,9 +50,7 @@ class LaunchActivity : IDEActivity() {
     }
 
     private fun startTerminal() {
-        val extras = Bundle().apply {
-            putInt(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_SHELL)
-        }
+        val extras = bundleOf(TerminalVars.KEY_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_DEFAULT)
         ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
     }
 
@@ -60,9 +59,8 @@ class LaunchActivity : IDEActivity() {
     }
 
     private fun startInterpreter() {
-        val extras = Bundle().apply {
-            putInt(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_PYTHON)
-        }
+        val extras =
+            bundleOf(TerminalVars.KEY_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_INTERPRETER)
         ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
     }
 }

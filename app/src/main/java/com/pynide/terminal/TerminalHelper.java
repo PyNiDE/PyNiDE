@@ -1,11 +1,13 @@
 package com.pynide.terminal;
 
 import android.graphics.Typeface;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import com.blankj.utilcode.util.CleanUtils;
 import com.blankj.utilcode.util.FileUtils;
 import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.Utils;
@@ -57,7 +59,7 @@ public class TerminalHelper {
         return IDESettings.getPreferences().getString(KEY_FONT_STYLE, DEFAULT_FONT_STYLE);
     }
 
-    public static Typeface getTypeface() {
+    public static Typeface getFontStyleTypeface() {
         final var fontStyle = String.format("fonts/%s", getFontStyle());
         return Typeface.createFromAsset(Utils.getApp().getAssets(), fontStyle);
     }
@@ -99,7 +101,6 @@ public class TerminalHelper {
         FileUtils.createOrExistsDir(TerminalVars.PREFIX_PATH);
         FileUtils.createOrExistsDir(temp);
 
-        environmentVars.put("FILES", TerminalVars.FILES_PATH);
         environmentVars.put("HOME", TerminalVars.HOME_PATH);
         environmentVars.put("PREFIX", TerminalVars.PREFIX_PATH);
         environmentVars.put("TMPDIR", temp);
@@ -112,26 +113,34 @@ public class TerminalHelper {
         environmentVars.put("SHELL", temp);
 
         temp = String.valueOf(BuildVars.DEBUG_VERSION);
-        environmentVars.put("PYNIDE_DEBUG", temp);
+        environmentVars.put("IDE_DEBUG", temp);
         temp = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE);
-        environmentVars.put("PYNIDE_VERSION", temp);
-        environmentVars.put("PYNIDE_PACKAGE", BuildVars.PACKAGE_NAME);
+        environmentVars.put("IDE_VERSION", temp);
+        environmentVars.put("IDE_PACKAGE", BuildVars.PACKAGE_NAME);
 
         temp = System.getenv("PATH");
-        environmentVars.put("PATH", String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp));
+        temp = String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp);
+        environmentVars.put("PATH", temp);
+
         temp = System.getenv("LD_LIBRARY_PATH");
         if (temp == null) {
-            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib", TerminalVars.PREFIX_PATH));
+            temp = String.format("%s/lib", TerminalVars.PREFIX_PATH);
+            environmentVars.put("LD_LIBRARY_PATH", temp);
         } else {
-            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp));
+            temp = String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp);
+            environmentVars.put("LD_LIBRARY_PATH", temp);
         }
+
         temp = String.format("%s/lib/terminal-exec.so", TerminalVars.PREFIX_PATH);
         if (FileUtils.isFileExists(temp)) {
             environmentVars.put("LD_PRELOAD", temp);
-        }
 
-        temp = String.valueOf(android.os.Process.is64Bit());
-        environmentVars.put("PROC_64BIT", temp);
+            if (Build.VERSION.SDK_INT >= 29) {
+                environmentVars.put("BASEDIR", TerminalVars.FILES_PATH);
+                temp = String.valueOf(android.os.Process.is64Bit());
+                environmentVars.put("PROC_64BIT", temp);
+            }
+        }
         return MapsKt.toSortedMap(environmentVars);
     }
 
@@ -145,9 +154,10 @@ public class TerminalHelper {
     }
 
     @NonNull
-    public static Pair<String, String[]> createShellCommandArguments(@NonNull final String executablePath, @NonNull final String[] argumentsArray, final boolean isLoginShell) {
-        final var executable = new File(executablePath);
+    public static Pair<String, String[]> createCommandArguments(@NonNull final String executablePath, @NonNull final String[] argumentsArray, final boolean isLoginShell) {
         String interpreter = null;
+
+        final var executable = new File(executablePath);
         try (final var in = new FileInputStream(executable)) {
             final var buffer = new byte[256];
             final var bytesRead = in.read(buffer);
@@ -159,7 +169,7 @@ public class TerminalHelper {
                     // Try to parse shebang.
                     final var builder = new StringBuilder();
                     for (int i = 2; i < bytesRead; i++) {
-                        char c = (char) buffer[i];
+                        var c = (char) buffer[i];
                         if (c == ' ' || c == '\n') {
                             //noinspection StatementWithEmptyBody
                             if (builder.length() == 0) {
@@ -196,7 +206,7 @@ public class TerminalHelper {
         actualArguments.add(processName);
 
         final String actualFileToExecute;
-        if (elfFileToExecute.startsWith(TerminalVars.FILES_PATH)) {
+        if (Build.VERSION.SDK_INT >= 29 && elfFileToExecute.startsWith(TerminalVars.FILES_PATH)) {
             actualFileToExecute = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
             actualArguments.add(elfFileToExecute);
         } else {
@@ -204,10 +214,17 @@ public class TerminalHelper {
         }
 
         if (interpreter != null) {
-            actualArguments.add(executable.getAbsolutePath());
+            actualArguments.add(executablePath);
         }
+
         Collections.addAll(actualArguments, argumentsArray);
         return Pair.create(actualFileToExecute, actualArguments.toArray(new String[0]));
+    }
+
+    @NonNull
+    public static Pair<File, List<String>> createCommandArguments(@NonNull final File executable, @NonNull final List<String> arguments, final boolean isLoginShell) {
+        var commandArguments = createCommandArguments(executable.getAbsolutePath(), arguments.toArray(new String[0]), isLoginShell);
+        return Pair.create(new File(commandArguments.first), Arrays.asList(commandArguments.second));
     }
 
     @NonNull
@@ -216,22 +233,26 @@ public class TerminalHelper {
 
         if (executable == null) {
             final var shell = new File(TerminalVars.PREFIX_PATH, "bin/sh");
-            if (FileUtils.isFileExists(shell)) {
+            if (FileUtils.isFile(shell) && FileUtils.isFileExists(shell)) {
                 executable = shell;
             }
         }
 
-        var executablePath = executable == null ? "/system/bin/sh" : executable.getAbsolutePath();
+        final var executablePath = executable == null ? "/system/bin/sh" : executable.getAbsolutePath();
         final var workingDirectoryPath = workingDirectory == null ? TerminalVars.HOME_PATH : workingDirectory.getAbsolutePath();
-        var argumentsArray = arguments == null ? new String[0] : arguments.toArray(new String[0]);
+        final var argumentsArray = arguments == null ? new String[0] : arguments.toArray(new String[0]);
         final var environmentVarsArray = createEnvironmentVarsArray();
+        final var commandArguments = createCommandArguments(executablePath, argumentsArray, isLoginShell);
 
-        final var sessionCommand = createShellCommandArguments(executablePath, argumentsArray, isLoginShell);
-        executablePath = sessionCommand.first;
-        argumentsArray = sessionCommand.second;
-
-        final var newSession = new TerminalSession(executablePath, workingDirectoryPath, argumentsArray, environmentVarsArray, 4000, sessionClient);
+        final var newSession = new TerminalSession(commandArguments.first, workingDirectoryPath, commandArguments.second, environmentVarsArray, 4000, sessionClient);
         newSession.mSessionName = "Session";
         return newSession;
+    }
+
+    public static void clearTMPDIR() {
+        var tmpDir = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
+        if (FileUtils.isFileExists(tmpDir)) {
+            CleanUtils.cleanCustomDir(tmpDir);
+        }
     }
 }

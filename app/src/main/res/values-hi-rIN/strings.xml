@@ -14,6 +14,7 @@
     <string name="dynamic_colors_summary">सिस्टम वॉलपेपर रंगों का उपयोग करें</string>
     <string name="language">भाषा</string>
     <string name="interpreter">इन्‍टरप्रेटर</string>
+    <string name="console">कंसोल</string>
     <string name="close">बंद करें</string>
     <string name="reset">रीसेट करें</string>
     <string name="share_transcript">प्रतिलेख साझा करें</string>
@@ -26,6 +27,7 @@
     <string name="github">गिटहब</string>
     <string name="oss_licenses">ओपन सोर्स लाइसेंस</string>
     <string name="report_bug">रिपोर्ट बग</string>
+    <string name="coming_soon">जल्द आ रहा है</string>
 
     <string name="ten_sp">10 एसपी</string>
     <string name="twelve_sp">12 एसपी</string>

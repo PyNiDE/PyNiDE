@@ -14,6 +14,7 @@
     <string name="dynamic_colors_summary">Use the system wallpaper colors</string>
     <string name="language">Language</string>
     <string name="interpreter">Interpreter</string>
+    <string name="console">Console</string>
     <string name="close">Close</string>
     <string name="reset">Reset</string>
     <string name="share_transcript">Share transcript</string>
@@ -26,6 +27,7 @@
     <string name="github">Github</string>
     <string name="oss_licenses">Open source licenses</string>
     <string name="report_bug">Report bug</string>
+    <string name="coming_soon">Coming soon</string>
 
     <string name="ten_sp">10 sp</string>
     <string name="twelve_sp">12 sp</string>

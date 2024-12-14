@@ -26,7 +26,7 @@ public class BellHandler {
         if (instance == null) {
             synchronized (lock) {
                 if (instance == null) {
-                    final var vibratorService = Utils.getApp().getApplicationContext().getSystemService(Vibrator.class);
+                    final var vibratorService = Utils.getApp().getSystemService(Vibrator.class);
                     instance = new BellHandler(vibratorService);
                 }
             }

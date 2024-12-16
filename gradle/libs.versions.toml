@@ -40,6 +40,7 @@ desugar = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.
 [plugins]
 application = { id = "com.android.application", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 themebuilder = { id = "dev.rikka.tools.materialthemebuilder", version.ref = "themebuilder" }
 autoresconfig = { id = "dev.rikka.tools.autoresconfig", version.ref = "autoresconfig" }
 

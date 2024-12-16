@@ -11,7 +11,7 @@ public class TerminalVars {
     public static final String PREFIX_PATH = FILES_PATH + "/usr";
 
     public static final String KEY_TERMINAL_TYPE = "terminal_type";
-    public static final int TERMINAL_TYPE_DEFAULT = 1;
-    public static final int TERMINAL_TYPE_INTERPRETER = 2;
-    public static final int TERMINAL_TYPE_CONSOLE = 3;
+    public static final TerminalType TERMINAL_TYPE_DEFAULT = TerminalType.DEFAULT;
+    public static final TerminalType TERMINAL_TYPE_INTERPRETER = TerminalType.INTERPRETER;
+    public static final TerminalType TERMINAL_TYPE_CONSOLE = TerminalType.CONSOLE;
 }

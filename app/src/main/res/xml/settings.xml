@@ -70,7 +70,7 @@
         app:title="@string/about">
 
         <Preference
-            app:icon="@drawable/ic_logo"
+            app:icon="@drawable/ic_info"
             app:key="about_version"
             app:persistent="false"
             app:selectable="false"

@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.view.InputDevice
@@ -30,6 +31,7 @@ import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.BellHandler
 import com.pynide.terminal.TerminalHelper
 import com.pynide.terminal.TerminalService
+import com.pynide.terminal.TerminalType
 import com.pynide.terminal.TerminalVars
 import com.pynide.utils.AndroidUtilities
 
@@ -47,14 +49,14 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     private val terminalView get() = binding.terminalView
 
     private val currentSession: TerminalSession? get() = terminalView.currentSession
-    private var terminalType: Int = TerminalVars.TERMINAL_TYPE_DEFAULT
+    private var terminalType: TerminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
     private var terminalService: TerminalService? = null
-    private var isStarted: Boolean = true
+    private var isActivityVisible: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
+        handleIntent(intent)
         super.onCreate(savedInstanceState)
-        setupTerminalData()
 
         binding = ActivityTerminalBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -62,15 +64,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
-
-        setTitle(
-            when (terminalType) {
-                TerminalVars.TERMINAL_TYPE_DEFAULT -> R.string.terminal
-                TerminalVars.TERMINAL_TYPE_INTERPRETER -> R.string.interpreter
-                TerminalVars.TERMINAL_TYPE_CONSOLE -> R.string.console
-                else -> R.string.terminal
-            }
-        )
+        setTitle(terminalType.title)
 
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -99,9 +93,11 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onServiceConnected(componentName: ComponentName?, service: IBinder) {
         terminalService = (service as TerminalService.LocalBinder).terminalService
+        terminalService!!.setType(terminalType)
+        terminalService!!.setSessionClient(this)
+
         setCurrentSession(getOrCreateSession())
         progressBar.hide()
-        terminalService!!.setTerminalSessionClient(this)
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
@@ -125,19 +121,20 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onStart() {
         super.onStart()
-        isStarted = true
+        isActivityVisible = true
         setCurrentSession(getOrCreateSession())
         terminalView.onScreenUpdated()
     }
 
     override fun onStop() {
-        isStarted = false
+        isActivityVisible = false
         super.onStop()
     }
 
     override fun onDestroy() {
         if (terminalService != null) {
-            terminalService!!.unsetTerminalSessionClient()
+            terminalService!!.unsetSessionClient()
+            terminalService!!.unsetType()
             terminalService = null
         }
         try {
@@ -178,7 +175,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_ENTER && session?.isRunning == false) {
-            removeFinishedSession(session)
+            val service = terminalService ?: return false
+            service.removeSession(session)
             finish()
             return true
         }
@@ -220,7 +218,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onTextChanged(changedSession: TerminalSession) {
-        if (isStarted && currentSession == changedSession) {
+        if (isActivityVisible && currentSession == changedSession) {
             terminalView.onScreenUpdated()
         }
     }
@@ -230,30 +228,31 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onSessionFinished(finishedSession: TerminalSession) {
-        if (terminalService == null || terminalService?.wantsToStop == true) {
+        val service = terminalService
+        if (service == null || service.wantsToStop) {
             finish()
             return
         }
         if ((finishedSession.exitStatus == 0 || finishedSession.exitStatus == 130)) {
-            removeFinishedSession(finishedSession)
+            service.removeSession(finishedSession)
         }
     }
 
     override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
-        if (isStarted && !text?.trim().isNullOrEmpty()) {
+        if (isActivityVisible && !text?.trim().isNullOrEmpty()) {
             ClipboardUtils.copyText(text?.trim())
         }
     }
 
     override fun onPasteTextFromClipboard(session: TerminalSession?) {
         val text = ClipboardUtils.getText().toString().trim()
-        if (isStarted && text.isNotEmpty() && terminalView.mEmulator != null) {
+        if (isActivityVisible && text.isNotEmpty() && terminalView.mEmulator != null) {
             terminalView.mEmulator.paste(text)
         }
     }
 
     override fun onBell(session: TerminalSession) {
-        if (isStarted) {
+        if (isActivityVisible) {
             BellHandler.getInstance().doBell()
         }
     }
@@ -267,7 +266,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun onReset() {
-        // TODO
+        val service = terminalService ?: return
+        setCurrentSession(service.resetSession(null, null, null))
     }
 
     private fun onShareTranscript() {
@@ -345,19 +345,17 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         }
     }
 
-    private fun removeFinishedSession(finishedSession: TerminalSession?) {
-        val service = terminalService ?: return
-        service.removeTerminalSession(finishedSession)
-    }
-
-    private fun setupTerminalData() {
-        intent ?: return
-        terminalType =
-            intent.getIntExtra(TerminalVars.KEY_TERMINAL_TYPE, TerminalVars.TERMINAL_TYPE_DEFAULT)
-    }
-
     private fun getOrCreateSession(): TerminalSession? {
         val service = terminalService ?: return null
-        return service.getOrCreateTerminalSession(terminalType, null, null, null)
+        return service.getOrCreateSession(null, null, null)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val temp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra(TerminalVars.KEY_TERMINAL_TYPE, TerminalType::class.java)
+        } else {
+            @Suppress("DEPRECATION") intent?.getParcelableExtra(TerminalVars.KEY_TERMINAL_TYPE)
+        }
+        if (temp != null) terminalType = temp
     }
 }

@@ -5,20 +5,16 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.util.SparseArray
 
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
-import androidx.core.util.forEach
-import androidx.core.util.isEmpty
 
 import com.blankj.utilcode.util.ResourceUtils
 
@@ -37,8 +33,9 @@ class TerminalService : Service() {
     }
 
     private val localBinder = LocalBinder()
-    private val terminalSessions = SparseArray<TerminalSession>(3)
+    private val terminalSessions = mutableMapOf<TerminalType, TerminalSession>()
     private var terminalSessionClient: TerminalSessionClient? = null
+    private var terminalType: TerminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
 
     private val notificationService by lazy { getSystemService(NotificationManager::class.java) }
 
@@ -49,8 +46,11 @@ class TerminalService : Service() {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        if (terminalType != TerminalVars.TERMINAL_TYPE_DEFAULT) {
+            unsetType()
+        }
         if (terminalSessionClient != null) {
-            unsetTerminalSessionClient()
+            unsetSessionClient()
         }
         return false
     }
@@ -70,7 +70,7 @@ class TerminalService : Service() {
 
     override fun onDestroy() {
         if (!wantsToStop) {
-            closeAllTerminalSessions()
+            closeAllSessions()
         }
         TerminalHelper.clearTMPDIR()
         runStopForeground()
@@ -111,27 +111,38 @@ class TerminalService : Service() {
 
     private fun actionStopService() {
         wantsToStop = true
-        closeAllTerminalSessions()
+        closeAllSessions()
         requestStopService()
     }
 
     @Synchronized
-    fun setTerminalSessionClient(terminalSessionClient: TerminalSessionClient) {
-        this.terminalSessionClient = terminalSessionClient
+    fun setSessionClient(sessionClient: TerminalSessionClient) {
+        this.terminalSessionClient = sessionClient
     }
 
-    fun unsetTerminalSessionClient() {
+    fun unsetSessionClient() {
         this.terminalSessionClient = null
     }
 
     @Synchronized
-    fun getOrCreateTerminalSession(
-        terminalType: Int, executable: File?, workingDirectory: File?, arguments: List<String>?
-    ): TerminalSession {
-        val currentSession = terminalSessions.get(terminalType)
-        if (currentSession != null && currentSession.isRunning) return currentSession
+    fun setType(terminalType: TerminalType) {
+        this.terminalType = terminalType
+    }
 
-        val sessionClient = object : TerminalSessionClient {
+    fun unsetType() {
+        this.terminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
+    }
+
+    @Synchronized
+    fun getOrCreateSession(
+        executable: File?, workingDirectory: File?, arguments: List<String>?
+    ): TerminalSession {
+        val currentSession = terminalSessions[terminalType]
+        if (currentSession != null && currentSession.isRunning) {
+            return currentSession
+        }
+
+        val temp = object : TerminalSessionClient {
             override fun onTextChanged(changedSession: TerminalSession) {
                 terminalSessionClient?.onTextChanged(changedSession)
             }
@@ -165,35 +176,32 @@ class TerminalService : Service() {
             }
         }
 
-        val newSession =
-            TerminalHelper.createSession(executable, workingDirectory, arguments, sessionClient)
-        terminalSessions.put(terminalType, newSession)
-        updateNotification()
+        val newSession = TerminalHelper.createSession(executable, workingDirectory, arguments, temp)
+        terminalSessions[terminalType] = newSession
         return newSession
     }
 
     @Synchronized
-    fun resetTerminalSession(
-        terminalType: Int, executable: File?, workingDirectory: File?, arguments: List<String>?
+    fun resetSession(
+        executable: File?, workingDirectory: File?, arguments: List<String>?
     ): TerminalSession {
-        val currentSession = terminalSessions.get(terminalType)
+        val currentSession = terminalSessions[terminalType]
         currentSession?.finishIfRunning()
-        return getOrCreateTerminalSession(terminalType, executable, workingDirectory, arguments)
+        return getOrCreateSession(executable, workingDirectory, arguments)
     }
 
     @Synchronized
-    fun removeTerminalSession(session: TerminalSession?) {
-        terminalSessions.forEach { type, s ->
-            if (s == session && !s.isRunning) {
+    fun removeSession(sessionToRemove: TerminalSession?) {
+        terminalSessions.forEach { (type, session) ->
+            if (session == sessionToRemove && !session.isRunning) {
                 terminalSessions.remove(type)
-                updateNotification()
             }
         }
     }
 
     @Synchronized
-    private fun closeAllTerminalSessions() {
-        terminalSessions.forEach { _, session ->
+    private fun closeAllSessions() {
+        terminalSessions.forEach { (_, session) ->
             session.finishIfRunning()
         }
         terminalSessions.clear()
@@ -211,6 +219,27 @@ class TerminalService : Service() {
         NotificationManagerCompat.from(this).createNotificationChannel(builder.build())
     }
 
+    private fun createNotification(): Notification {
+        var notificationIcon = ResourceUtils.getDrawableIdByName("ic_logo")
+        if (notificationIcon == 0) {
+            notificationIcon = android.R.drawable.sym_def_app_icon
+        }
+
+        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
+            setSmallIcon(notificationIcon)
+            setContentTitle(getString(R.string.terminal_session_is_running))
+            setPriority(NotificationCompat.PRIORITY_LOW)
+            setShowWhen(false)
+            setAutoCancel(false)
+            setOngoing(true)
+            setSilent(true)
+            setWhen(System.currentTimeMillis())
+        }
+
+        builder.addAction(R.drawable.ic_close, getString(R.string.close), createCloseActionIntent())
+        return builder.build()
+    }
+
     private fun createCloseActionIntent(): PendingIntent {
         val context = this
         Intent(context, TerminalService::class.java).apply {
@@ -223,32 +252,6 @@ class TerminalService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }
-    }
-
-    override fun attachBaseContext(newBase: Context?) {
-        super.attachBaseContext(newBase)
-    }
-
-    private fun createNotification(): Notification {
-        var notificationIcon = ResourceUtils.getDrawableIdByName("ic_logo")
-        if (notificationIcon == 0) {
-            notificationIcon = android.R.drawable.sym_def_app_icon
-        }
-
-        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
-            setContentTitle(getString(R.string.terminal))
-            setSmallIcon(notificationIcon)
-            setContentText(getString(R.string.session_is_running))
-            setPriority(NotificationCompat.PRIORITY_LOW)
-            setShowWhen(false)
-            setAutoCancel(false)
-            setOngoing(true)
-            setSilent(true)
-            setWhen(System.currentTimeMillis())
-        }
-
-        builder.addAction(R.drawable.ic_close, getString(R.string.close), createCloseActionIntent())
-        return builder.build()
     }
 
     @Synchronized

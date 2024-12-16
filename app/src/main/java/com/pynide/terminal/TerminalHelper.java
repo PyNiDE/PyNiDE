@@ -1,19 +1,20 @@
 package com.pynide.terminal;
 
 import android.graphics.Typeface;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
 import com.blankj.utilcode.util.CleanUtils;
+import com.blankj.utilcode.util.DeviceUtils;
 import com.blankj.utilcode.util.FileUtils;
 import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.Utils;
 
 import com.pynide.BuildVars;
 import com.pynide.IDESettings;
+import com.pynide.R;
 import com.pynide.utils.FileLog;
 import com.pynide.utils.Utilities;
 
@@ -110,8 +111,14 @@ public class TerminalHelper {
         environmentVars.put("LANG", "en_US.UTF-8");
 
         temp = String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
-        environmentVars.put("SHELL", temp);
+        if (FileUtils.isFileExists(temp)) {
+            environmentVars.put("SHELL", temp);
+        } else {
+            environmentVars.put("SHELL", "/system/bin/sh");
+        }
 
+        temp = Utils.getApp().getString(R.string.app_name);
+        environmentVars.put("IDE_NAME", temp);
         temp = String.valueOf(BuildVars.DEBUG_VERSION);
         environmentVars.put("IDE_DEBUG", temp);
         temp = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE);
@@ -135,7 +142,7 @@ public class TerminalHelper {
         if (FileUtils.isFileExists(temp)) {
             environmentVars.put("LD_PRELOAD", temp);
 
-            if (Build.VERSION.SDK_INT >= 29) {
+            if (DeviceUtils.getSDKVersionCode() >= 29) {
                 environmentVars.put("BASEDIR", TerminalVars.FILES_PATH);
                 temp = String.valueOf(android.os.Process.is64Bit());
                 environmentVars.put("PROC_64BIT", temp);
@@ -169,7 +176,7 @@ public class TerminalHelper {
                     // Try to parse shebang.
                     final var builder = new StringBuilder();
                     for (int i = 2; i < bytesRead; i++) {
-                        var c = (char) buffer[i];
+                        final var c = (char) buffer[i];
                         if (c == ' ' || c == '\n') {
                             //noinspection StatementWithEmptyBody
                             if (builder.length() == 0) {
@@ -206,7 +213,7 @@ public class TerminalHelper {
         actualArguments.add(processName);
 
         final String actualFileToExecute;
-        if (Build.VERSION.SDK_INT >= 29 && elfFileToExecute.startsWith(TerminalVars.FILES_PATH)) {
+        if (DeviceUtils.getSDKVersionCode() >= 29 && elfFileToExecute.startsWith(TerminalVars.FILES_PATH)) {
             actualFileToExecute = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
             actualArguments.add(elfFileToExecute);
         } else {
@@ -223,7 +230,7 @@ public class TerminalHelper {
 
     @NonNull
     public static Pair<File, List<String>> createCommandArguments(@NonNull final File executable, @NonNull final List<String> arguments, final boolean isLoginShell) {
-        var commandArguments = createCommandArguments(executable.getAbsolutePath(), arguments.toArray(new String[0]), isLoginShell);
+        final var commandArguments = createCommandArguments(executable.getAbsolutePath(), arguments.toArray(new String[0]), isLoginShell);
         return Pair.create(new File(commandArguments.first), Arrays.asList(commandArguments.second));
     }
 
@@ -233,7 +240,7 @@ public class TerminalHelper {
 
         if (executable == null) {
             final var shell = new File(TerminalVars.PREFIX_PATH, "bin/sh");
-            if (FileUtils.isFile(shell) && FileUtils.isFileExists(shell)) {
+            if (FileUtils.isFileExists(shell)) {
                 executable = shell;
             }
         }
@@ -250,9 +257,8 @@ public class TerminalHelper {
     }
 
     public static void clearTMPDIR() {
-        var tmpDir = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
-        if (FileUtils.isFileExists(tmpDir)) {
-            CleanUtils.cleanCustomDir(tmpDir);
-        }
+        final var tmpDir = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
+        CleanUtils.cleanCustomDir(tmpDir);
+        FileUtils.createOrExistsDir(tmpDir);
     }
 }

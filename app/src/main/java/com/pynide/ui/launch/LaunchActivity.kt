@@ -50,7 +50,7 @@ class LaunchActivity : IDEActivity() {
     }
 
     private fun startTerminal() {
-        val extras = bundleOf(TerminalVars.KEY_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_DEFAULT)
+        val extras = bundleOf(TerminalVars.EXTRA_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_DEFAULT)
         ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
     }
 
@@ -60,7 +60,7 @@ class LaunchActivity : IDEActivity() {
 
     private fun startInterpreter() {
         val extras =
-            bundleOf(TerminalVars.KEY_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_INTERPRETER)
+            bundleOf(TerminalVars.EXTRA_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_INTERPRETER)
         ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
     }
 }

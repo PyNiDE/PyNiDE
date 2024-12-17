@@ -46,6 +46,7 @@
             android:name=".ui.terminal.TerminalActivity"
             android:hardwareAccelerated="true"
             android:label="@string/terminal"
+            android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
@@ -56,7 +57,8 @@
         <service
             android:name=".terminal.TerminalService"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse"
+            android:stopWithTask="true">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="@string/terminal_service_special_use_property" />

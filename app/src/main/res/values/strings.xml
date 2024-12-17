@@ -18,6 +18,7 @@
     <string name="close">Close</string>
     <string name="reset">Reset</string>
     <string name="share_transcript">Share transcript</string>
+    <string name="select_url">Select URL</string>
     <string name="keep_screen_on">Keep screen on</string>
     <string name="font_size">Font size</string>
     <string name="font_style">Font style</string>
@@ -26,7 +27,7 @@
     <string name="version">Version</string>
     <string name="github">Github</string>
     <string name="oss_licenses">Open source licenses</string>
-    <string name="report_bug">Report bug</string>
+    <string name="privacy_policy">Privacy policy</string>
     <string name="coming_soon">Coming soon</string>
 
     <string name="ten_sp">10 sp</string>

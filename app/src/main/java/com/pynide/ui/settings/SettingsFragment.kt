@@ -51,8 +51,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var terminalColorSchemePreference: ListPreference
     private lateinit var aboutVersionPreference: Preference
     private lateinit var aboutGithubPreference: Preference
-    private lateinit var aboutReportBugPreference: Preference
     private lateinit var aboutOssLicencesPreference: Preference
+    private lateinit var aboutPrivacyPolicyPreference: Preference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.setStorageDeviceProtected()
@@ -70,8 +70,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalColorSchemePreference = findPreference(KEY_TERMINAL_COLOR_SCHEME)!!
         aboutVersionPreference = findPreference("about_version")!!
         aboutGithubPreference = findPreference("about_github")!!
-        aboutReportBugPreference = findPreference("about_report_bug")!!
         aboutOssLicencesPreference = findPreference("about_oss_licenses")!!
+        aboutPrivacyPolicyPreference = findPreference("about_privacy_policy")!!
 
         nightModePreference.value = IDESettings.getNightMode()
         nightModePreference.onPreferenceChangeListener =
@@ -148,16 +148,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        aboutReportBugPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            ToastUtils.showShort(R.string.coming_soon)
-            true
-        }
-
         aboutOssLicencesPreference.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
                 ToastUtils.showShort(R.string.coming_soon)
                 true
             }
+
+        aboutPrivacyPolicyPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            ToastUtils.showShort(R.string.coming_soon)
+            true
+        }
     }
 
     override fun onCreateRecyclerView(

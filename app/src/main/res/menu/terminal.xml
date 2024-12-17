@@ -20,4 +20,10 @@
         android:icon="@drawable/ic_paste"
         android:title="@android:string/paste"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_select_url"
+        android:icon="@drawable/ic_link"
+        android:title="@string/select_url"
+        app:showAsAction="never" />
 </menu>

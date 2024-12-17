@@ -10,7 +10,7 @@ public class TerminalVars {
     public static final String HOME_PATH = FILES_PATH + "/home";
     public static final String PREFIX_PATH = FILES_PATH + "/usr";
 
-    public static final String KEY_TERMINAL_TYPE = "terminal_type";
+    public static final String EXTRA_TERMINAL_TYPE = "terminal_type";
     public static final TerminalType TERMINAL_TYPE_DEFAULT = TerminalType.DEFAULT;
     public static final TerminalType TERMINAL_TYPE_INTERPRETER = TerminalType.INTERPRETER;
     public static final TerminalType TERMINAL_TYPE_CONSOLE = TerminalType.CONSOLE;

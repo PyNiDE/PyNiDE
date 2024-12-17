@@ -20,6 +20,7 @@ import com.blankj.utilcode.util.ResourceUtils
 
 import com.pynide.BuildVars
 import com.pynide.R
+import com.pynide.ui.terminal.TerminalActivity
 import com.pynide.utils.FileLog
 
 import com.termux.terminal.TerminalSession
@@ -28,27 +29,28 @@ import com.termux.terminal.TerminalSessionClient
 import java.io.File
 
 class TerminalService : Service() {
-    inner class LocalBinder : Binder() {
-        val terminalService get() = this@TerminalService
+    inner class ServiceBinder : Binder() {
+        val service get() = this@TerminalService
     }
 
-    private val localBinder = LocalBinder()
-    private val terminalSessions = mutableMapOf<TerminalType, TerminalSession>()
+    private val serviceBinder = ServiceBinder()
+    private val terminalSessions = mutableListOf<TerminalSession>()
     private var terminalSessionClient: TerminalSessionClient? = null
-    private var terminalType: TerminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
+    private var wantsToStop: Boolean = false
 
     private val notificationService by lazy { getSystemService(NotificationManager::class.java) }
 
-    var wantsToStop: Boolean = false
+    @get:Synchronized
+    val sessions: List<TerminalSession> get() = terminalSessions
+
+    @get:Synchronized
+    val isWantsToStop: Boolean get() = wantsToStop
 
     override fun onBind(intent: Intent?): IBinder {
-        return localBinder
+        return serviceBinder
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        if (terminalType != TerminalVars.TERMINAL_TYPE_DEFAULT) {
-            unsetType()
-        }
         if (terminalSessionClient != null) {
             unsetSessionClient()
         }
@@ -116,6 +118,14 @@ class TerminalService : Service() {
     }
 
     @Synchronized
+    private fun closeAllSessions() {
+        terminalSessions.forEach { session ->
+            session.finishIfRunning()
+        }
+        terminalSessions.clear()
+    }
+
+    @Synchronized
     fun setSessionClient(sessionClient: TerminalSessionClient) {
         this.terminalSessionClient = sessionClient
     }
@@ -125,23 +135,9 @@ class TerminalService : Service() {
     }
 
     @Synchronized
-    fun setType(terminalType: TerminalType) {
-        this.terminalType = terminalType
-    }
-
-    fun unsetType() {
-        this.terminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
-    }
-
-    @Synchronized
-    fun getOrCreateSession(
+    fun createSession(
         executable: File?, workingDirectory: File?, arguments: List<String>?
     ): TerminalSession {
-        val currentSession = terminalSessions[terminalType]
-        if (currentSession != null && currentSession.isRunning) {
-            return currentSession
-        }
-
         val temp = object : TerminalSessionClient {
             override fun onTextChanged(changedSession: TerminalSession) {
                 terminalSessionClient?.onTextChanged(changedSession)
@@ -177,34 +173,61 @@ class TerminalService : Service() {
         }
 
         val newSession = TerminalHelper.createSession(executable, workingDirectory, arguments, temp)
-        terminalSessions[terminalType] = newSession
+        terminalSessions.add(newSession)
+        // TODO Notify sessions updated
         return newSession
     }
 
     @Synchronized
-    fun resetSession(
-        executable: File?, workingDirectory: File?, arguments: List<String>?
-    ): TerminalSession {
-        val currentSession = terminalSessions[terminalType]
-        currentSession?.finishIfRunning()
-        return getOrCreateSession(executable, workingDirectory, arguments)
-    }
-
-    @Synchronized
-    fun removeSession(sessionToRemove: TerminalSession?) {
-        terminalSessions.forEach { (type, session) ->
-            if (session == sessionToRemove && !session.isRunning) {
-                terminalSessions.remove(type)
+    fun getIndexOfSession(terminalSession: TerminalSession?): Int {
+        if (terminalSession == null) return -1
+        terminalSessions.forEachIndexed { index, session ->
+            if (terminalSession == session) {
+                return index
             }
         }
+        return -1
     }
 
     @Synchronized
-    private fun closeAllSessions() {
-        terminalSessions.forEach { (_, session) ->
-            session.finishIfRunning()
+    fun removeSession(sessionToRemove: TerminalSession?): Int {
+        val index = getIndexOfSession(sessionToRemove)
+        if (index >= 0) {
+            val session = terminalSessions[index]
+            if (!session.isRunning) {
+                terminalSessions.remove(session)
+                // TODO Notify sessions updated
+            }
         }
-        terminalSessions.clear()
+        return index
+    }
+
+    @Synchronized
+    fun getSession(index: Int): TerminalSession? {
+        return if (index >= 0 && index < terminalSessions.size) {
+            terminalSessions[index]
+        } else {
+            null
+        }
+    }
+
+    @Synchronized
+    fun getLastSession(): TerminalSession? {
+        return if (terminalSessions.isEmpty()) {
+            null
+        } else {
+            terminalSessions.last()
+        }
+    }
+
+    @Synchronized
+    fun getSessionForHandle(sessionHandle: String): TerminalSession? {
+        terminalSessions.forEach { session ->
+            if (sessionHandle == session.mHandle) {
+                return session
+            }
+        }
+        return null
     }
 
     private fun createNotificationChannel() {
@@ -227,7 +250,10 @@ class TerminalService : Service() {
 
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
             setSmallIcon(notificationIcon)
+            setContentIntent(createContentIntent())
+            setColorized(true)
             setContentTitle(getString(R.string.terminal_session_is_running))
+            setContentText(getString(R.string.tap_close_to_stop))
             setPriority(NotificationCompat.PRIORITY_LOW)
             setShowWhen(false)
             setAutoCancel(false)
@@ -236,11 +262,25 @@ class TerminalService : Service() {
             setWhen(System.currentTimeMillis())
         }
 
-        builder.addAction(R.drawable.ic_close, getString(R.string.close), createCloseActionIntent())
+        builder.addAction(R.drawable.ic_close, getString(R.string.close), createActionStopIntent())
         return builder.build()
     }
 
-    private fun createCloseActionIntent(): PendingIntent {
+    private fun createContentIntent(): PendingIntent {
+        val context = this
+        Intent(context, TerminalActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }.also { intent ->
+            return PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+    }
+
+    private fun createActionStopIntent(): PendingIntent {
         val context = this
         Intent(context, TerminalService::class.java).apply {
             action = ACTION_SERVICE_STOP

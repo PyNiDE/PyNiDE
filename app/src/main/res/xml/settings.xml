@@ -85,15 +85,15 @@
             app:title="@string/github" />
 
         <Preference
-            app:icon="@drawable/ic_bug_report"
-            app:key="about_report_bug"
-            app:persistent="false"
-            app:title="@string/report_bug" />
-
-        <Preference
             app:icon="@drawable/ic_license"
             app:key="about_oss_licenses"
             app:persistent="false"
             app:title="@string/oss_licenses" />
+
+        <Preference
+            app:icon="@drawable/ic_policy"
+            app:key="about_privacy_policy"
+            app:persistent="false"
+            app:title="@string/privacy_policy" />
     </PreferenceCategory>
 </PreferenceScreen>

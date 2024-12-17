@@ -92,11 +92,10 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun onServiceConnected(componentName: ComponentName?, service: IBinder) {
-        terminalService = (service as TerminalService.LocalBinder).terminalService
-        terminalService!!.setType(terminalType)
+        terminalService = (service as TerminalService.ServiceBinder).service
         terminalService!!.setSessionClient(this)
 
-        setCurrentSession(getOrCreateSession())
+        setCurrentSession(terminalService!!.createSession(null, null, null))
         progressBar.hide()
     }
 
@@ -115,6 +114,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
             R.id.action_reset -> onReset()
             R.id.action_share_transcript -> onShareTranscript()
             R.id.action_paste -> onPaste()
+            R.id.action_select_url -> onSelectURL()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -122,7 +122,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     override fun onStart() {
         super.onStart()
         isActivityVisible = true
-        setCurrentSession(getOrCreateSession())
+        // TODO Set last selected session
         terminalView.onScreenUpdated()
     }
 
@@ -134,7 +134,6 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     override fun onDestroy() {
         if (terminalService != null) {
             terminalService!!.unsetSessionClient()
-            terminalService!!.unsetType()
             terminalService = null
         }
         try {
@@ -229,7 +228,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onSessionFinished(finishedSession: TerminalSession) {
         val service = terminalService
-        if (service == null || service.wantsToStop) {
+        if (service == null || service.isWantsToStop) {
             finish()
             return
         }
@@ -266,8 +265,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun onReset() {
-        val service = terminalService ?: return
-        setCurrentSession(service.resetSession(null, null, null))
+
     }
 
     private fun onShareTranscript() {
@@ -278,6 +276,10 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         IntentUtils.getShareTextIntent(transcript).also { intent ->
             ActivityUtils.startActivity(this, intent)
         }
+    }
+
+    private fun onSelectURL() {
+
     }
 
     private fun onPaste() {
@@ -345,16 +347,11 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         }
     }
 
-    private fun getOrCreateSession(): TerminalSession? {
-        val service = terminalService ?: return null
-        return service.getOrCreateSession(null, null, null)
-    }
-
     private fun handleIntent(intent: Intent?) {
         val temp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent?.getParcelableExtra(TerminalVars.KEY_TERMINAL_TYPE, TerminalType::class.java)
+            intent?.getParcelableExtra(TerminalVars.EXTRA_TERMINAL_TYPE, TerminalType::class.java)
         } else {
-            @Suppress("DEPRECATION") intent?.getParcelableExtra(TerminalVars.KEY_TERMINAL_TYPE)
+            @Suppress("DEPRECATION") intent?.getParcelableExtra(TerminalVars.EXTRA_TERMINAL_TYPE)
         }
         if (temp != null) terminalType = temp
     }

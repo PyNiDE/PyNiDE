@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
@@ -30,8 +31,18 @@ class LaunchActivity : IDEActivity() {
         binding = ActivityLaunchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+        setSupportActionBar(binding.appbarLaunch.toolbar)
         setTitle(R.string.python_ide)
+
+        val drawerToggle = ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            binding.appbarLaunch.toolbar,
+            R.string.show_files,
+            R.string.hide_files
+        )
+        binding.drawerLayout.addDrawerListener(drawerToggle)
+        drawerToggle.syncState()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -50,7 +61,8 @@ class LaunchActivity : IDEActivity() {
     }
 
     private fun startTerminal() {
-        val extras = bundleOf(TerminalVars.EXTRA_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_DEFAULT)
+        val extras =
+            bundleOf(TerminalVars.EXTRA_TERMINAL_TYPE to TerminalVars.TERMINAL_TYPE_DEFAULT)
         ActivityUtils.startActivity(extras, this, TerminalActivity::class.java)
     }
 

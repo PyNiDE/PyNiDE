@@ -29,6 +29,8 @@
     <string name="oss_licenses">ओपन सोर्स लाइसेंस</string>
     <string name="privacy_policy">गोपनीयता नीति</string>
     <string name="coming_soon">जल्द आ रहा है</string>
+    <string name="show_files">फ़ाइलें दिखाएँ</string>
+    <string name="hide_files">फ़ाइलें छिपाएँ</string>
 
     <string name="ten_sp">10 एसपी</string>
     <string name="twelve_sp">12 एसपी</string>

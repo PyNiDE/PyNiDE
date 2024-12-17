@@ -94,8 +94,8 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     override fun onServiceConnected(componentName: ComponentName?, service: IBinder) {
         terminalService = (service as TerminalService.ServiceBinder).service
         terminalService!!.setSessionClient(this)
-
-        setCurrentSession(terminalService!!.createSession(null, null, null))
+        val createdSession = terminalService!!.createSession(null, null, null)
+        setCurrentSession(createdSession)
         progressBar.hide()
     }
 
@@ -174,9 +174,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_ENTER && session?.isRunning == false) {
-            val service = terminalService ?: return false
-            service.removeSession(session)
-            finish()
+            removeFinishedSession(session)
             return true
         }
         return false
@@ -233,7 +231,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
             return
         }
         if ((finishedSession.exitStatus == 0 || finishedSession.exitStatus == 130)) {
-            service.removeSession(finishedSession)
+            removeFinishedSession(finishedSession)
         }
     }
 
@@ -341,9 +339,24 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     private fun setCurrentSession(session: TerminalSession?) {
-        if (session != null) {
-            terminalView.attachSession(session)
+        if (session == null) return
+        if (terminalView.attachSession(session)) {
             updateTerminalColors()
+        }
+    }
+
+    private fun removeFinishedSession(finishedSession: TerminalSession?) {
+        val service = terminalService ?: return
+        var index = service.removeSession(finishedSession)
+        val size = service.sessions.size
+        if (size == 0) {
+            finish()
+        } else {
+            if (index >= size) index = size - 1
+            val session = service.getSession(index)
+            if (session != null) {
+                setCurrentSession(session)
+            }
         }
     }
 

@@ -105,6 +105,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.fragment.ktx)
     implementation(libs.constraintlayout)
+    implementation(libs.recyclerview)
     implementation(libs.preference.ktx)
     implementation(libs.activity.ktx)
     implementation(libs.splashscreen)

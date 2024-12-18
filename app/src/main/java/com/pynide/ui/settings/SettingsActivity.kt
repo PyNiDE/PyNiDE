@@ -5,6 +5,8 @@ import android.os.Bundle
 
 import androidx.activity.enableEdgeToEdge
 
+import com.blankj.utilcode.util.FragmentUtils
+
 import com.pynide.R
 import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivitySettingsBinding
@@ -23,8 +25,7 @@ class SettingsActivity : IDEActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.settings_container, SettingsFragment()).commit()
+            FragmentUtils.add(supportFragmentManager, SettingsFragment(), R.id.settings_container)
         }
     }
 

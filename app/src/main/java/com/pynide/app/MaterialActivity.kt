@@ -20,10 +20,7 @@ import rikka.insets.WindowInsetsHelper
 import rikka.layoutinflater.view.LayoutInflaterFactory
 
 open class MaterialActivity : AppCompatActivity() {
-    private val localeDelegate by lazy {
-        LocaleDelegate()
-    }
-
+    private val localeDelegate by lazy { LocaleDelegate() }
     private var userThemeKey: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

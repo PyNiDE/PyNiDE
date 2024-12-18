@@ -35,6 +35,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.google.android.material.theme.overlay.MaterialThemeOverlay;
+
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -109,8 +111,12 @@ public final class TerminalView extends View {
 
     private final boolean mAccessibilityEnabled;
 
+    public TerminalView(Context context) {
+        this(context, null);
+    }
+
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
-        super(context, attributes);
+        super(MaterialThemeOverlay.wrap(context, attributes, 0, 0), attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
 
             boolean scrolledWithFinger;

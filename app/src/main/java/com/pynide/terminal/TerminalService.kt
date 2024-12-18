@@ -243,15 +243,14 @@ class TerminalService : Service() {
     }
 
     private fun createNotification(): Notification {
-        var notificationIcon = ResourceUtils.getDrawableIdByName("ic_logo")
-        if (notificationIcon == 0) {
-            notificationIcon = android.R.drawable.sym_def_app_icon
+        var smallIcon = ResourceUtils.getDrawableIdByName("ic_logo")
+        if (smallIcon == 0) {
+            smallIcon = android.R.drawable.sym_def_app_icon
         }
 
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
-            setSmallIcon(notificationIcon)
+            setSmallIcon(smallIcon)
             setContentIntent(createContentIntent())
-            setColorized(true)
             setContentTitle(getString(R.string.terminal_session_is_running))
             setContentText(getString(R.string.tap_close_to_stop))
             setPriority(NotificationCompat.PRIORITY_LOW)

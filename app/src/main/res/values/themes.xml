@@ -3,12 +3,14 @@
     <style name="Base.Theme.PyNiDE.Light" parent="Theme.Material3.Light.PyNiDE">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
         <item name="appColorPrimary">@color/app_color_light</item>
     </style>
 
     <style name="Base.Theme.PyNiDE.Dark" parent="Theme.Material3.Dark.PyNiDE">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
         <item name="appColorPrimary">@color/app_color_dark</item>
     </style>
 

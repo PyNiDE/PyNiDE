@@ -1,7 +1,6 @@
 package com.termux.view;
 
 import android.content.ClipboardManager;
-import android.content.Context;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.ActionMode;
@@ -14,6 +13,7 @@ import android.view.ViewTreeObserver;
 import androidx.annotation.Nullable;
 
 import com.pynide.R;
+import com.pynide.utils.AndroidUtilities;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.WcWidth;
@@ -109,10 +109,20 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                 int show = MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
+                ClipboardManager clipboard = terminalView.getContext().getSystemService(ClipboardManager.class);
 
-                ClipboardManager clipboard = (ClipboardManager) terminalView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                menu.add(Menu.NONE, ACTION_COPY, Menu.NONE, android.R.string.copy).setShowAsAction(show);
-                menu.add(Menu.NONE, ACTION_PASTE, Menu.NONE, android.R.string.paste).setEnabled(clipboard != null && clipboard.hasPrimaryClip()).setShowAsAction(show);
+                menu.add(Menu.NONE, ACTION_COPY, Menu.NONE, android.R.string.copy)
+                        .setShowAsAction(show);
+
+                menu.add(Menu.NONE, ACTION_PASTE, Menu.NONE, android.R.string.paste)
+                        .setEnabled(clipboard != null && clipboard.hasPrimaryClip())
+                        .setIcon(R.drawable.ic_paste)
+                        .setShowAsAction(show);
+
+                menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more)
+                        .setShowAsAction(show);
+
+                AndroidUtilities.setOptionalIcons(menu, true);
                 return true;
             }
 

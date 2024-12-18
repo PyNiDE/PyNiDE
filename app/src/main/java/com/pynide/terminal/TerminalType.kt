@@ -14,7 +14,7 @@ import kotlinx.parcelize.Parcelize
 enum class TerminalType(val id: Int, @StyleRes val title: Int) : Parcelable {
     DEFAULT(0, R.string.terminal),
     INTERPRETER(1, R.string.interpreter),
-    CONSOLE(1, R.string.console);
+    CONSOLE(2, R.string.console);
 
     private companion object : Parceler<TerminalType> {
         override fun TerminalType.write(parcel: Parcel, flags: Int) {

@@ -7,24 +7,23 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.ContextMenu
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.ColorUtils
 import com.blankj.utilcode.util.IntentUtils
-
 import com.pynide.R
 import com.pynide.app.IDEActivity
 import com.pynide.databinding.ActivityTerminalBinding
@@ -34,12 +33,12 @@ import com.pynide.terminal.TerminalService
 import com.pynide.terminal.TerminalType
 import com.pynide.terminal.TerminalVars
 import com.pynide.utils.AndroidUtilities
-
 import com.termux.terminal.TerminalColors
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import com.termux.terminal.TextStyle
 import com.termux.view.TerminalViewClient
+
 
 class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClient,
     ServiceConnection {
@@ -47,6 +46,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     private val progressBar get() = binding.progressBar
     private val terminalRootView get() = binding.terminalRootView
     private val terminalView get() = binding.terminalView
+    private val terminalGroup get() = binding.terminalGroup
 
     private val currentSession: TerminalSession? get() = terminalView.currentSession
     private var terminalType: TerminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
@@ -296,7 +296,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         terminalView.setTypeface(TerminalHelper.getFontStyleTypeface())
         terminalView.setTerminalViewClient(this)
         updateTerminalBackgroundColors()
-        terminalView.isVisible = true
+        terminalGroup.isVisible = true
         terminalView.requestFocus()
     }
 

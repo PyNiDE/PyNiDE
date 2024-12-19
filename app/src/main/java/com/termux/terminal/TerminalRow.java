@@ -8,8 +8,33 @@ import java.util.Arrays;
  * The text in the row is stored in a char[] array, {@link #mText}, for quick access during rendering.
  */
 public final class TerminalRow {
-
     private static final float SPARE_CAPACITY_FACTOR = 1.5f;
+
+    /**
+     * Max combining characters that can exist in a column, that are separate from the base character
+     * itself. Any additional combining characters will be ignored and not added to the column.
+     *
+     * There does not seem to be limit in unicode standard for max number of combination characters
+     * that can be combined but such characters are primarily under 10.
+     *
+     * "Section 3.6 Combination" of unicode standard contains combining characters info.
+     * - https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf
+     * - https://en.wikipedia.org/wiki/Combining_character#Unicode_ranges
+     * - https://stackoverflow.com/questions/71237212/what-is-the-maximum-number-of-unicode-combined-characters-that-may-be-needed-to
+     *
+     * UAX15-D3 Stream-Safe Text Format limits to max 30 combining characters.
+     * > The value of 30 is chosen to be significantly beyond what is required for any linguistic or technical usage.
+     * > While it would have been feasible to chose a smaller number, this value provides a very wide margin,
+     * > yet is well within the buffer size limits of practical implementations.
+     * - https://unicode.org/reports/tr15/#Stream_Safe_Text_Format
+     * - https://stackoverflow.com/a/11983435/14686958
+     *
+     * We choose the value 15 because it should be enough for terminal based applications and keep
+     * the memory usage low for a terminal row, won't affect performance or cause terminal to
+     * lag or hang, and will keep malicious applications from causing harm. The value can be
+     * increased if ever needed for legitimate applications.
+     */
+    private static final int MAX_COMBINING_CHARACTERS_PER_COLUMN = 15;
 
     /** The number of columns in this terminal row. */
     private final int mColumns;
@@ -170,16 +195,19 @@ public final class TerminalRow {
             oldCharactersUsedForColumn = mSpaceUsed - oldStartOfColumnIndex;
         }
 
+        // If MAX_COMBINING_CHARACTERS_PER_COLUMN already exist in column, then ignore adding additional combining characters.
+        if (newIsCombining) {
+            int combiningCharsCount = WcWidth.zeroWidthCharsCount(mText, oldStartOfColumnIndex, oldStartOfColumnIndex + oldCharactersUsedForColumn);
+            if (combiningCharsCount >= MAX_COMBINING_CHARACTERS_PER_COLUMN)
+                return;
+        }
+
         // Find how many chars this column will need
         int newCharactersUsedForColumn = Character.charCount(codePoint);
         if (newIsCombining) {
             // Combining characters are added to the contents of the column instead of overwriting them, so that they
             // modify the existing contents.
             // FIXME: Unassigned characters also get width=0.
-            if (newCharactersUsedForColumn + oldCharactersUsedForColumn > 15) {
-                // Protect against too many combining characters.
-                return;
-            }
             newCharactersUsedForColumn += oldCharactersUsedForColumn;
         }
 
@@ -193,7 +221,7 @@ public final class TerminalRow {
             if (mSpaceUsed + javaCharDifference > text.length) {
                 // We need to grow the array
                 char[] newText = new char[text.length + mColumns];
-                System.arraycopy(text, 0, newText, 0, oldStartOfColumnIndex + oldCharactersUsedForColumn);
+                System.arraycopy(text, 0, newText, 0, oldNextColumnIndex);
                 System.arraycopy(text, oldNextColumnIndex, newText, newNextColumnIndex, oldCharactersAfterColumn);
                 mText = text = newText;
             } else {
@@ -203,7 +231,7 @@ public final class TerminalRow {
             // Shift the rest of the line left.
             System.arraycopy(text, oldNextColumnIndex, text, newNextColumnIndex, mSpaceUsed - oldNextColumnIndex);
         }
-        mSpaceUsed += javaCharDifference;
+        mSpaceUsed += (short) javaCharDifference;
 
         // Store char. A combining character is stored at the end of the existing contents so that it modifies them:
         //noinspection ResultOfMethodCallIgnored - since we already now how many java chars is used.
@@ -236,7 +264,7 @@ public final class TerminalRow {
 
                 // Shift the array leftwards.
                 System.arraycopy(text, newNextNextColumnIndex, text, newNextColumnIndex, mSpaceUsed - newNextNextColumnIndex);
-                mSpaceUsed -= nextLen;
+                mSpaceUsed -= (short) nextLen;
             }
         }
     }
@@ -250,5 +278,4 @@ public final class TerminalRow {
     public long getStyle(int column) {
         return mStyle[column];
     }
-
 }

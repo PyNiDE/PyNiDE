@@ -13,7 +13,6 @@ package com.termux.terminal;
  * - 24 for background color (only 9 first bits if a color index).
  */
 public final class TextStyle {
-
     public final static int CHARACTER_ATTRIBUTE_BOLD = 1;
     public final static int CHARACTER_ATTRIBUTE_ITALIC = 1 << 1;
     public final static int CHARACTER_ATTRIBUTE_UNDERLINE = 1 << 2;
@@ -86,5 +85,4 @@ public final class TextStyle {
     public static int decodeEffect(long style) {
         return (int) (style & 0b11111111111);
     }
-
 }

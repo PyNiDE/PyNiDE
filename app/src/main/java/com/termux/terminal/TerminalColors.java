@@ -4,7 +4,6 @@ import android.graphics.Color;
 
 /** Current terminal colors (if different from default). */
 public final class TerminalColors {
-
     /** Static data - a bit ugly but ok for now. */
     public static final TerminalColorScheme COLOR_SCHEME = new TerminalColorScheme();
 
@@ -92,5 +91,4 @@ public final class TerminalColors {
                     Math.pow(Color.blue(color), 2) * 0.068
             ));
     }
-
 }

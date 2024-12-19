@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Platform.V29.Theme.PyNiDE" parent="Platform.V27.Theme.PyNiDE">
         <item name="android:forceDarkAllowed">false</item>
     </style>

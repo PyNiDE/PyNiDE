@@ -7,7 +7,6 @@ import android.os.Message;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -33,7 +32,6 @@ import java.util.UUID;
  * NOTE: The terminal session may outlive the EmulatorView, so be careful with callbacks!
  */
 public final class TerminalSession extends TerminalOutput {
-
     private static final int MSG_NEW_INPUT = 1;
     private static final int MSG_PROCESS_EXITED = 4;
 
@@ -69,15 +67,12 @@ public final class TerminalSession extends TerminalOutput {
      */
     private int mTerminalFileDescriptor;
 
-    public long mProcessSpawnedTimeMillis;
-    public long mProcessExitTimeMillis;
-
     /** Set by the application for user identification of session, not by terminal. */
     public String mSessionName;
 
-    final Handler mMainThreadHandler = new MainThreadHandler();
+    final Handler mMainThreadHandler = new Handler(Looper.getMainLooper(), new MainThreadHandler());
 
-    private final String mExecutablePath;
+    private final String mShellPath;
     private final String mCwd;
     private final String[] mArgs;
     private final String[] mEnv;
@@ -86,13 +81,24 @@ public final class TerminalSession extends TerminalOutput {
 
     private static final String LOG_TAG = "TerminalSession";
 
-    public TerminalSession(@NonNull String shellPath, @NonNull String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
-        this.mExecutablePath = shellPath;
+    public TerminalSession(String shellPath, String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
+        this.mShellPath = shellPath;
         this.mCwd = cwd;
         this.mArgs = args;
         this.mEnv = env;
         this.mTranscriptRows = transcriptRows;
         this.mClient = client;
+    }
+
+    /**
+     * @param client The {@link TerminalSessionClient} interface implementation to allow
+     *               for communication between {@link TerminalSession} and its client.
+     */
+    public void updateTerminalSessionClient(TerminalSessionClient client) {
+        mClient = client;
+
+        if (mEmulator != null)
+            mEmulator.updateTerminalSessionClient(client);
     }
 
     /** Inform the attached pty of the new size and reflow or initialize the emulator. */
@@ -120,11 +126,11 @@ public final class TerminalSession extends TerminalOutput {
         mEmulator = new TerminalEmulator(this, columns, rows, cellWidthPixels, cellHeightPixels, mTranscriptRows, mClient);
 
         int[] processId = new int[1];
-        mTerminalFileDescriptor = Terminal.createSubprocess(mExecutablePath, mCwd, mArgs, mEnv, processId, rows, columns, cellWidthPixels, cellHeightPixels);
-        mProcessSpawnedTimeMillis = System.currentTimeMillis();
+        mTerminalFileDescriptor = Terminal.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns, cellWidthPixels, cellHeightPixels);
         mShellPid = processId[0];
+        mClient.setTerminalShellPid(this, mShellPid);
 
-        var terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor);
+        final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);
 
         new Thread("TermSessionInputReader[pid=" + mShellPid + "]") {
             @Override
@@ -217,7 +223,7 @@ public final class TerminalSession extends TerminalOutput {
     }
 
     /** Notify the {@link #mClient} that the screen has changed. */
-    private void notifyScreenUpdate() {
+    protected void notifyScreenUpdate() {
         mClient.onTextChanged(this);
     }
 
@@ -233,7 +239,7 @@ public final class TerminalSession extends TerminalOutput {
             try {
                 Os.kill(mShellPid, OsConstants.SIGKILL);
             } catch (ErrnoException e) {
-                Log.w(LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
+                Logger.logWarn(mClient, LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
             }
         }
     }
@@ -241,7 +247,6 @@ public final class TerminalSession extends TerminalOutput {
     /** Cleanup resources when the process exits. */
     void cleanupResources(int exitStatus) {
         synchronized (this) {
-            mProcessExitTimeMillis = System.currentTimeMillis();
             mShellPid = -1;
             mShellExitStatus = exitStatus;
         }
@@ -306,12 +311,14 @@ public final class TerminalSession extends TerminalOutput {
                 return outputPath;
             }
         } catch (IOException | SecurityException e) {
-            Log.e(LOG_TAG, "Error getting current directory", e);
+            Logger.logStackTraceWithMessage(mClient, LOG_TAG, "Error getting current directory", e);
         }
         return null;
     }
 
-    private static FileDescriptor wrapFileDescriptor(int fileDescriptor) {
+    /** @noinspection JavaReflectionMemberAccess*/
+    @SuppressLint("DiscouragedPrivateApi")
+    private static FileDescriptor wrapFileDescriptor(int fileDescriptor, TerminalSessionClient client) {
         FileDescriptor result = new FileDescriptor();
         try {
             Field descriptorField;
@@ -323,23 +330,19 @@ public final class TerminalSession extends TerminalOutput {
             }
             descriptorField.setAccessible(true);
             descriptorField.set(result, fileDescriptor);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
+            Logger.logStackTraceWithMessage(client, LOG_TAG, "Error accessing FileDescriptor#descriptor private field", e);
+            System.exit(1);
         }
         return result;
     }
 
     @SuppressLint("HandlerLeak")
-    class MainThreadHandler extends Handler {
-
+    class MainThreadHandler implements Handler.Callback {
         final byte[] mReceiveBuffer = new byte[4 * 1024];
 
-        public MainThreadHandler() {
-            super(Looper.getMainLooper());
-        }
-
         @Override
-        public void handleMessage(@NonNull Message msg) {
+        public boolean handleMessage(@NonNull Message msg) {
             int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
             if (bytesRead > 0) {
                 mEmulator.append(mReceiveBuffer, bytesRead);
@@ -365,9 +368,9 @@ public final class TerminalSession extends TerminalOutput {
                 notifyScreenUpdate();
 
                 mClient.onSessionFinished(TerminalSession.this);
+                return true;
             }
+            return false;
         }
-
     }
-
 }

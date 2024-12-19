@@ -154,10 +154,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        aboutPrivacyPolicyPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            ToastUtils.showShort(R.string.coming_soon)
-            true
-        }
+        aboutPrivacyPolicyPreference.onPreferenceClickListener =
+            Preference.OnPreferenceClickListener {
+                ToastUtils.showShort(R.string.coming_soon)
+                true
+            }
     }
 
     override fun onCreateRecyclerView(

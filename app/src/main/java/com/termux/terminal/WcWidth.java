@@ -12,7 +12,6 @@ package com.termux.terminal;
  * https://github.com/termux/termux-packages/tree/master/packages/libandroid-support
  */
 public final class WcWidth {
-
     // From https://github.com/jquast/wcwidth/blob/master/wcwidth/table_zero.py
     // from https://github.com/jquast/wcwidth/pull/64
     // at commit 1b9b6585b0080ea5cb88dc9815796505724793fe (2022-12-16):
@@ -538,4 +537,28 @@ public final class WcWidth {
         return Character.isHighSurrogate(c) ? width(Character.toCodePoint(c, chars[index + 1])) : width(c);
     }
 
+    /**
+     * The zero width characters count like combining characters in the `chars` array from start
+     * index to end index (exclusive).
+     */
+    public static int zeroWidthCharsCount(char[] chars, int start, int end) {
+        if (start < 0 || start >= chars.length)
+            return 0;
+
+        int count = 0;
+        for (int i = start; i < end && i < chars.length;) {
+            if (Character.isHighSurrogate(chars[i])) {
+                if (width(Character.toCodePoint(chars[i], chars[i + 1])) <= 0) {
+                    count++;
+                }
+                i += 2;
+            } else {
+                if (width(chars[i]) <= 0) {
+                    count++;
+                }
+                i++;
+            }
+        }
+        return count;
+    }
 }

@@ -1,6 +1,7 @@
-package com.termux.view;
+package com.termux.view.textselection;
 
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.ActionMode;
@@ -8,18 +9,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 
 import androidx.annotation.Nullable;
 
 import com.pynide.R;
-import com.pynide.utils.AndroidUtilities;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.WcWidth;
+import com.termux.view.TerminalView;
 
-public class TextSelectionCursorController implements ViewTreeObserver.OnTouchModeChangeListener {
-
+public class TextSelectionCursorController implements CursorController {
     private final TerminalView terminalView;
     private final TextSelectionHandleView mStartHandle, mEndHandle;
     private String mStoredSelectedText;
@@ -27,7 +26,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
     private long mShowStartTime = System.currentTimeMillis();
 
     private final int mHandleHeight;
-    public int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
+    private int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
 
     private ActionMode mActionMode;
     public final int ACTION_COPY = 1;
@@ -42,6 +41,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
         mHandleHeight = Math.max(mStartHandle.getHandleHeight(), mEndHandle.getHandleHeight());
     }
 
+    @Override
     public void show(MotionEvent event) {
         setInitialTextSelectionPosition(event);
         mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
@@ -52,6 +52,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
         mIsSelectingText = true;
     }
 
+    @Override
     public boolean hide() {
         if (!isActive()) return false;
 
@@ -76,6 +77,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
         return true;
     }
 
+    @Override
     public void render() {
         if (!isActive()) return;
 
@@ -109,20 +111,16 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                 int show = MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
-                ClipboardManager clipboard = terminalView.getContext().getSystemService(ClipboardManager.class);
+                ClipboardManager clipboard = (ClipboardManager) terminalView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
 
                 menu.add(Menu.NONE, ACTION_COPY, Menu.NONE, android.R.string.copy)
                         .setShowAsAction(show);
 
                 menu.add(Menu.NONE, ACTION_PASTE, Menu.NONE, android.R.string.paste)
                         .setEnabled(clipboard != null && clipboard.hasPrimaryClip())
-                        .setIcon(R.drawable.ic_paste)
                         .setShowAsAction(show);
 
-                menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more)
-                        .setShowAsAction(show);
-
-                AndroidUtilities.setOptionalIcons(menu, true);
+                menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more);
                 return true;
             }
 
@@ -214,6 +212,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
         }, ActionMode.TYPE_FLOATING);
     }
 
+    @Override
     public void updatePosition(TextSelectionHandleView handle, int x, int y) {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
@@ -349,13 +348,25 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
         }
     }
 
+    @Override
     public void onDetached() {
     }
 
+    @Override
     public boolean isActive() {
         return mIsSelectingText;
     }
 
+    public void getSelectors(int[] sel) {
+        if (sel == null || sel.length != 4) {
+            return;
+        }
+
+        sel[0] = mSelY1;
+        sel[1] = mSelY2;
+        sel[2] = mSelX1;
+        sel[3] = mSelX2;
+    }
 
     /** Get the currently selected text. */
     public String getSelectedText() {
@@ -390,5 +401,4 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
     public boolean isSelectionEndDragged() {
         return mEndHandle.isDragging();
     }
-
 }

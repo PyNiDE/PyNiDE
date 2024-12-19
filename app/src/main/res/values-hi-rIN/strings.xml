@@ -17,6 +17,7 @@
     <string name="console">कंसोल</string>
     <string name="close">बंद करें</string>
     <string name="reset">रीसेट करें</string>
+    <string name="toggle_autoscroll">ऑटोस्क्रॉल टॉगल करें</string>
     <string name="share_transcript">प्रतिलेख साझा करें</string>
     <string name="select_url">URL चुनें</string>
     <string name="keep_screen_on">स्क्रीन चालू रखें</string>

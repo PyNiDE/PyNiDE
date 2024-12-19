@@ -54,12 +54,24 @@ class LaunchActivity : IDEActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_terminal -> startTerminal()
-            R.id.action_settings -> startSettings()
-            R.id.action_interpreter -> startInterpreter()
+        return when (item.itemId) {
+            R.id.action_terminal -> {
+                startTerminal()
+                true
+            }
+
+            R.id.action_settings -> {
+                startSettings()
+                true
+            }
+
+            R.id.action_interpreter -> {
+                startInterpreter()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun startTerminal() {

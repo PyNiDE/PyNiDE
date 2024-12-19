@@ -17,7 +17,6 @@ import com.termux.terminal.WcWidth;
  * Saves font metrics, so needs to be recreated each time the typeface or font size changes.
  */
 public final class TerminalRenderer {
-
     final int mTextSize;
     final Typeface mTypeface;
     private final Paint mTextPaint = new Paint();
@@ -55,13 +54,13 @@ public final class TerminalRenderer {
 
     /** Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection. */
     public void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
-                             int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
+                       int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
         final boolean reverseVideo = mEmulator.isReverseVideo();
         final int endRow = topRow + mEmulator.mRows;
         final int columns = mEmulator.mColumns;
         final int cursorCol = mEmulator.getCursorCol();
         final int cursorRow = mEmulator.getCursorRow();
-        final boolean cursorVisible = mEmulator.isCursorEnabled();
+        final boolean cursorVisible = mEmulator.shouldCursorBeVisible();
         final TerminalBuffer screen = mEmulator.getScreen();
         final int[] palette = mEmulator.mColors.mCurrentColors;
         final int cursorShape = mEmulator.getCursorStyle();
@@ -95,9 +94,9 @@ public final class TerminalRenderer {
 
             for (int column = 0; column < columns; ) {
                 final char charAtIndex = line[currentCharIndex];
-                final boolean charIsHighSurrogate = Character.isHighSurrogate(charAtIndex);
-                final int charsForCodePoint = charIsHighSurrogate ? 2 : 1;
-                final int codePoint = charIsHighSurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
+                final boolean charIsHighsurrogate = Character.isHighSurrogate(charAtIndex);
+                final int charsForCodePoint = charIsHighsurrogate ? 2 : 1;
+                final int codePoint = charIsHighsurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
                 final int codePointWcWidth = WcWidth.width(codePoint);
                 final boolean insideCursor = (cursorX == column || (codePointWcWidth == 2 && cursorX == column + 1));
                 final boolean insideSelection = column >= selx1 && column <= selx2;

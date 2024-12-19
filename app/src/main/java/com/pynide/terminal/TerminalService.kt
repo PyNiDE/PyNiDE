@@ -24,7 +24,6 @@ import com.pynide.ui.terminal.TerminalActivity
 import com.pynide.utils.FileLog
 
 import com.termux.terminal.TerminalSession
-import com.termux.terminal.TerminalSessionClient
 
 import java.io.File
 
@@ -36,6 +35,7 @@ class TerminalService : Service() {
     private val serviceBinder = ServiceBinder()
     private val terminalSessions = mutableListOf<TerminalSession>()
     private var terminalSessionClient: TerminalSessionClient? = null
+    private var emptyTerminalSessionClient = EmptyTerminalSessionClient()
     private var wantsToStop: Boolean = false
 
     private val notificationService by lazy { getSystemService(NotificationManager::class.java) }
@@ -45,6 +45,10 @@ class TerminalService : Service() {
 
     @get:Synchronized
     val isWantsToStop: Boolean get() = wantsToStop
+
+    @get:Synchronized
+    val sessionClient: com.termux.terminal.TerminalSessionClient
+        get() = terminalSessionClient ?: emptyTerminalSessionClient
 
     override fun onBind(intent: Intent?): IBinder {
         return serviceBinder
@@ -126,7 +130,7 @@ class TerminalService : Service() {
     }
 
     @Synchronized
-    fun setSessionClient(sessionClient: TerminalSessionClient) {
+    fun setSessionClient(sessionClient: TerminalSessionClient?) {
         this.terminalSessionClient = sessionClient
     }
 
@@ -138,41 +142,8 @@ class TerminalService : Service() {
     fun createSession(
         executable: File?, workingDirectory: File?, arguments: List<String>?
     ): TerminalSession {
-        val temp = object : TerminalSessionClient {
-            override fun onTextChanged(changedSession: TerminalSession) {
-                terminalSessionClient?.onTextChanged(changedSession)
-            }
-
-            override fun onTitleChanged(changedSession: TerminalSession) {
-                terminalSessionClient?.onTitleChanged(changedSession)
-            }
-
-            override fun onSessionFinished(finishedSession: TerminalSession) {
-                terminalSessionClient?.onSessionFinished(finishedSession)
-            }
-
-            override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
-                terminalSessionClient?.onCopyTextToClipboard(session, text)
-            }
-
-            override fun onPasteTextFromClipboard(session: TerminalSession?) {
-                terminalSessionClient?.onPasteTextFromClipboard(session)
-            }
-
-            override fun onBell(session: TerminalSession) {
-                terminalSessionClient?.onBell(session)
-            }
-
-            override fun onColorsChanged(session: TerminalSession) {
-                terminalSessionClient?.onColorsChanged(session)
-            }
-
-            override fun onTerminalCursorStateChange(state: Boolean) {
-                terminalSessionClient?.onTerminalCursorStateChange(state)
-            }
-        }
-
-        val newSession = TerminalHelper.createSession(executable, workingDirectory, arguments, temp)
+        val newSession =
+            TerminalHelper.createSession(executable, workingDirectory, arguments, sessionClient)
         terminalSessions.add(newSession)
         // TODO Notify sessions updated
         return newSession

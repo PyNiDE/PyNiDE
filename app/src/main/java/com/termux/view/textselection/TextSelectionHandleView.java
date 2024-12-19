@@ -1,4 +1,4 @@
-package com.termux.view;
+package com.termux.view.textselection;
 
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
@@ -12,15 +12,18 @@ import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.pynide.R;
+
+import com.termux.view.TerminalView;
 
 @SuppressLint("ViewConstructor")
 public class TextSelectionHandleView extends View {
     private final TerminalView terminalView;
     private PopupWindow mHandle;
-    private final TextSelectionCursorController mCursorController;
+    private final CursorController mCursorController;
 
     private final Drawable mHandleLeftDrawable;
     private final Drawable mHandleRightDrawable;
@@ -52,7 +55,7 @@ public class TextSelectionHandleView extends View {
 
     private long mLastTime;
 
-    public TextSelectionHandleView(TerminalView terminalView, TextSelectionCursorController cursorController, int initialOrientation) {
+    public TextSelectionHandleView(TerminalView terminalView, CursorController cursorController, int initialOrientation) {
         super(terminalView.getContext());
         this.terminalView = terminalView;
         mCursorController = cursorController;
@@ -73,7 +76,6 @@ public class TextSelectionHandleView extends View {
         mHandle.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         mHandle.setBackgroundDrawable(null);
         mHandle.setAnimationStyle(0);
-
         mHandle.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
         mHandle.setEnterTransition(null);
         mHandle.setExitTransition(null);
@@ -272,7 +274,7 @@ public class TextSelectionHandleView extends View {
     }
 
     @Override
-    public void onDraw(Canvas c) {
+    public void onDraw(@NonNull Canvas c) {
         final int width = mHandleDrawable.getIntrinsicWidth();
         int height = mHandleDrawable.getIntrinsicHeight();
         mHandleDrawable.setBounds(0, 0, width, height);
@@ -343,5 +345,4 @@ public class TextSelectionHandleView extends View {
     public boolean isDragging() {
         return mIsDragging;
     }
-
 }

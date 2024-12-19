@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <bool name="terminal_toggle_actionbar_on_soft_keyboard_change">true</bool>
+    <bool name="terminal_toggle_actionbar_when_soft_keyboard_change">true</bool>
 </resources>

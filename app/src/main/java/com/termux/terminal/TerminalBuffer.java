@@ -9,7 +9,6 @@ import java.util.Arrays;
  * See {@link #externalToInternalRow(int)} for how to map from logical screen rows to array indices.
  */
 public final class TerminalBuffer {
-
     TerminalRow[] mLines;
     /** The length of {@link #mLines}. */
     int mTotalRows;
@@ -493,5 +492,4 @@ public final class TerminalBuffer {
         }
         mActiveTranscriptRows = 0;
     }
-
 }

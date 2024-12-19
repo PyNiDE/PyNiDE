@@ -14,6 +14,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_toggle_autoscroll"
+        android:icon="@drawable/ic_arrow_downward"
+        android:title="@string/toggle_autoscroll"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_paste"
         android:icon="@drawable/ic_paste"
         android:title="@android:string/paste"

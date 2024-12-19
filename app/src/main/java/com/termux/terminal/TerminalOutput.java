@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 
 /** A client which receives callbacks from events triggered by feeding input to a {@link TerminalEmulator}. */
 public abstract class TerminalOutput {
-
     /** Write a string using the UTF-8 encoding to the terminal client. */
     public final void write(String data) {
         if (data == null) return;
@@ -28,5 +27,4 @@ public abstract class TerminalOutput {
     public abstract void onBell();
 
     public abstract void onColorsChanged();
-
 }

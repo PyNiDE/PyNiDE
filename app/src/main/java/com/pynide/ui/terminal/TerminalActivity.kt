@@ -19,6 +19,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ClipboardUtils
@@ -52,6 +53,7 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     private var terminalType: TerminalType = TerminalVars.TERMINAL_TYPE_DEFAULT
     private var terminalService: TerminalService? = null
     private var isActivityVisible: Boolean = true
+    private var onCopyMode: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -77,10 +79,12 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
         })
 
         setupTerminalView()
-        ViewCompat.setOnApplyWindowInsetsListener(terminalRootView) { _, insets ->
-            val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-            AndroidUtilities.toggleActionBar(supportActionBar, !imeVisible)
-            WindowInsetsCompat.CONSUMED
+        if (resources.getBoolean(R.bool.terminal_toggle_actionbar_on_soft_keyboard_change)) {
+            ViewCompat.setOnApplyWindowInsetsListener(terminalRootView) { _, insets ->
+                val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+                AndroidUtilities.toggleActionBar(supportActionBar, !imeVisible)
+                WindowInsetsCompat.CONSUMED
+            }
         }
 
         Intent(this, TerminalService::class.java).also { intent ->
@@ -105,6 +109,11 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.terminal, menu)
+        menu?.forEach { item ->
+            if (item.itemId != R.id.action_paste) {
+                item.setEnabled(!onCopyMode)
+            }
+        }
         AndroidUtilities.setOptionalIcons(menu, true)
         return super.onCreateOptionsMenu(menu)
     }
@@ -169,7 +178,10 @@ class TerminalActivity : IDEActivity(), TerminalViewClient, TerminalSessionClien
     }
 
     override fun copyModeChanged(copyMode: Boolean) {
-
+        if (onCopyMode != copyMode) {
+            onCopyMode = copyMode
+            invalidateOptionsMenu()
+        }
     }
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {

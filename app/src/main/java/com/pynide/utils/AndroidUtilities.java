@@ -52,20 +52,23 @@ public class AndroidUtilities {
     }
 
     @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@NonNull final MenuBuilder menuBuilder, final boolean visible) {
-        menuBuilder.setOptionalIconsVisible(visible);
+    public static void setOptionalIcons(@NonNull final MenuBuilder menuBuilder, final boolean visible, final boolean padding) {
+        if (visible) menuBuilder.setOptionalIconsVisible(true);
+        if (!padding) return;
         for (final var item : menuBuilder.getVisibleItems()) {
-            final var iconPadding = SizeUtils.dp2px(8f);
-            if (item.getIcon() != null && item.requiresOverflow()) {
-                item.setIcon(new InsetDrawable(item.getIcon(), iconPadding, 0, iconPadding, 0));
+            final var icon = item.getIcon();
+            if (icon instanceof InsetDrawable) return;
+            if (icon != null && item.requiresOverflow()) {
+                final var iconPadding = SizeUtils.dp2px(8f);
+                item.setIcon(new InsetDrawable(icon, iconPadding, 0, iconPadding, 0));
             }
         }
     }
 
     @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@Nullable final Menu menu, final boolean visible) {
+    public static void setOptionalIcons(@Nullable final Menu menu, final boolean visible, final boolean padding) {
         if (menu == null) return;
-        if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible);
+        if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible, padding);
     }
 
     public static boolean isNightMode(@Nullable final Configuration configuration) {

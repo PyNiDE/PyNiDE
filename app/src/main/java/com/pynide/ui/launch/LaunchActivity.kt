@@ -49,8 +49,13 @@ class LaunchActivity : IDEActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.launch, menu)
-        AndroidUtilities.setOptionalIcons(menu, true)
+        AndroidUtilities.setOptionalIcons(menu, true, false)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        AndroidUtilities.setOptionalIcons(menu, false, true)
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

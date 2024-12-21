@@ -106,15 +106,14 @@ class TerminalActivity : IDEActivity(), ServiceConnection {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.terminal, menu)
-        AndroidUtilities.setOptionalIcons(menu, true)
+        AndroidUtilities.setOptionalIcons(menu, true, false)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        AndroidUtilities.setOptionalIcons(menu, false, true)
         menu?.forEach { item ->
-            if (item.itemId != R.id.action_paste) {
-                item.setEnabled(terminalViewClient?.copyMode == false)
-            }
+            item.setEnabled(terminalViewClient?.copyMode == false)
         }
         return super.onPrepareOptionsMenu(menu)
     }

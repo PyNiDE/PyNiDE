@@ -55,8 +55,9 @@ public class AndroidUtilities {
     public static void setOptionalIcons(@NonNull final MenuBuilder menuBuilder, final boolean visible) {
         menuBuilder.setOptionalIconsVisible(visible);
         for (final var item : menuBuilder.getVisibleItems()) {
+            final var iconPadding = SizeUtils.dp2px(8f);
             if (item.getIcon() != null && item.requiresOverflow()) {
-                item.setIcon(new InsetDrawable(item.getIcon(), SizeUtils.dp2px(8f), 0, SizeUtils.dp2px(8f), 0));
+                item.setIcon(new InsetDrawable(item.getIcon(), iconPadding, 0, iconPadding, 0));
             }
         }
     }

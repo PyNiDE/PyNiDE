@@ -37,6 +37,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.google.android.material.color.MaterialColors;
+
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -132,10 +134,13 @@ public final class TerminalView extends View {
 
     private static final String LOG_TAG = "TerminalView";
 
+    public TerminalView(Context context) {
+        this(context, null);
+    }
+
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
-
             boolean scrolledWithFinger;
 
             @Override
@@ -255,12 +260,22 @@ public final class TerminalView extends View {
                 }
             }
         });
+
         mScroller = new Scroller(context);
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
+
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setFocusedByDefault(true);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setDefaultFocusHighlightEnabled(false);
+        }
+        setWillNotDraw(false);
+        setVerticalScrollBarEnabled(true);
     }
-
-
 
     /**
      * @param client The {@link TerminalViewClient} interface implementation to allow
@@ -1010,7 +1025,8 @@ public final class TerminalView extends View {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         if (mEmulator == null) {
-            canvas.drawColor(0XFF000000);
+            final var backgroundColor = MaterialColors.getColor(this, android.R.attr.colorBackground);
+            canvas.drawColor(backgroundColor);
         } else {
             // render the terminal view and highlight any selected text
             int[] sel = mDefaultSelectors;
@@ -1023,6 +1039,16 @@ public final class TerminalView extends View {
             // render the text selection handles
             renderTextSelection();
         }
+    }
+
+    @Override
+    public ActionMode startActionMode(ActionMode.Callback callback) {
+        return super.startActionMode(callback);
+    }
+
+    @Override
+    public ActionMode startActionMode(ActionMode.Callback callback, int type) {
+        return super.startActionMode(callback, type);
     }
 
     public TerminalSession getCurrentSession() {

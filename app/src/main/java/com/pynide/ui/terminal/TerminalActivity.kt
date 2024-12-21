@@ -196,7 +196,6 @@ class TerminalActivity : IDEActivity(), ServiceConnection {
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
         terminalView.setTypeface(TerminalHelper.getFontStyleTypeface())
         terminalView.setTerminalViewClient(terminalViewClient)
-        updateTerminalColors()
         terminalGroup.isVisible = true
         terminalView.requestFocus()
     }
@@ -229,7 +228,7 @@ class TerminalActivity : IDEActivity(), ServiceConnection {
             val backgroundHexColor = colorsProperties["background"] as String?
             if (backgroundHexColor != null) {
                 ColorUtils.string2Int(backgroundHexColor)
-            } else Color.BLACK
+            } else return
         }
         terminalRootView.setBackgroundColor(backgroundColor)
     }

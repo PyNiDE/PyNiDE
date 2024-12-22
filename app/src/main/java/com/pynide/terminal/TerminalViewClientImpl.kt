@@ -13,7 +13,7 @@ import com.termux.view.TerminalViewClient
 class TerminalViewClientImpl(private val activity: TerminalActivity) : TerminalViewClient {
     private var copyMode: Boolean = false
 
-    val isCopyMode: Boolean get() = copyMode
+    val isCopyMode get() = copyMode
 
     override fun onScale(scale: Float): Float {
         return 1.0f

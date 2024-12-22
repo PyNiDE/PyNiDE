@@ -1,6 +1,6 @@
 package com.pynide.terminal;
 
-import static com.pynide.utils.AndroidUtilities.ASSETS_FONT_PREFIX;
+import static com.pynide.editor.EditorHelper.ASSETS_FONT_PREFIX;
 
 import android.graphics.Typeface;
 
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -50,7 +51,7 @@ public class TerminalHelper {
     public static final String DEFAULT_FONT_STYLE = "reddit.ttf";
     public static final String DEFAULT_COLOR_SCHEME = "DYNAMIC";
 
-    private static final Map<String, String> colorSchemesCache = new HashMap<>();
+    private static final Map<String, String> colorSchemesCache = new LinkedHashMap<>();
 
     public static boolean isKeepScreenOn() {
         return IDESettings.getPreferences().getBoolean(KEY_KEEP_SCREEN_ON, true);
@@ -100,7 +101,7 @@ public class TerminalHelper {
             if (colorSchemesCache.isEmpty()) {
                 colorSchemesCache.put(Utils.getApp().getString(R.string.color_scheme_dynamic), DEFAULT_COLOR_SCHEME);
 
-                final var tempArray = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_COLOR_SCHEME_PREFIX)).filter(s -> s.endsWith(".properties")).sorted();
+                final var tempArray = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_COLOR_SCHEME_PREFIX)).filter(s -> s.endsWith(".properties"));
                 tempArray.forEach(name -> {
                     var temp = name.replace('-', ' ');
                     final var dotIndex = temp.lastIndexOf('.');

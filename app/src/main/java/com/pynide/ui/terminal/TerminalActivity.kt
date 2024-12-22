@@ -3,6 +3,7 @@ package com.pynide.ui.terminal
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -43,6 +44,7 @@ import java.util.Properties
 
 class TerminalActivity : IDEActivity(), ServiceConnection {
     private lateinit var binding: ActivityTerminalBinding
+    private val divider get() = binding.divider
     private val progressBar get() = binding.progressBar
     private val terminalRootView get() = binding.terminalRootView
     val terminalView get() = binding.terminalView
@@ -187,7 +189,8 @@ class TerminalActivity : IDEActivity(), ServiceConnection {
         terminalViewClient = TerminalViewClientImpl(this)
         terminalView.setTextSize(TerminalHelper.getFontSizePx())
         terminalView.keepScreenOn = TerminalHelper.isKeepScreenOn()
-        TerminalHelper.getFontStyleTypeface()?.let(terminalView::setTypeface)
+        val typeface = TerminalHelper.getFontStyleTypeface()
+        terminalView.setTypeface(typeface ?: Typeface.MONOSPACE)
         terminalView.setTerminalViewClient(terminalViewClient)
         terminalGroup.isVisible = true
         terminalView.requestFocus()
@@ -198,6 +201,7 @@ class TerminalActivity : IDEActivity(), ServiceConnection {
             ViewCompat.setOnApplyWindowInsetsListener(terminalRootView) { _, insets ->
                 val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
                 AndroidUtilities.toggleActionBar(supportActionBar, !imeVisible)
+                divider.isVisible = !imeVisible
                 WindowInsetsCompat.CONSUMED
             }
         }

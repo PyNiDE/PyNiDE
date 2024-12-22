@@ -22,12 +22,9 @@ import com.blankj.utilcode.util.Utils;
 
 import org.telegram.messenger.FileLog;
 
-import java.io.IOException;
 import java.util.Hashtable;
 
 public class AndroidUtilities {
-    public static final String ASSETS_FONT_PREFIX = "fonts/";
-
     private static final Hashtable<String, Typeface> typefaceCache = new Hashtable<>();
 
     @Nullable

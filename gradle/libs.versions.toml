@@ -2,7 +2,6 @@
 agp = "8.5.2"
 kotlin = "1.9.0"
 themebuilder = "1.4.1"
-autoresconfig = "1.2.1"
 #noinspection GradleDependency
 core = "1.13.0"
 appcompat = "1.7.0"
@@ -19,7 +18,7 @@ rikkaxSimplemenuPreference = "1.0.3"
 rikkaxMaterialPreference = "2.0.0"
 utilcodex = "1.31.1"
 eventbus = "3.3.1"
-desugar = "2.1.3"
+desugar = "2.1.4"
 
 [libraries]
 core = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
@@ -44,5 +43,4 @@ application = { id = "com.android.application", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 themebuilder = { id = "dev.rikka.tools.materialthemebuilder", version.ref = "themebuilder" }
-autoresconfig = { id = "dev.rikka.tools.autoresconfig", version.ref = "autoresconfig" }
 

@@ -2,7 +2,7 @@ package com.pynide;
 
 import androidx.annotation.NonNull;
 
-import com.pynide.utils.FileLog;
+import org.telegram.messenger.FileLog;
 
 import java.util.Arrays;
 

@@ -114,9 +114,11 @@ public class TextSelectionCursorController implements CursorController {
                 ClipboardManager clipboard = (ClipboardManager) terminalView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
 
                 menu.add(Menu.NONE, ACTION_COPY, Menu.NONE, android.R.string.copy)
+                        .setIcon(R.drawable.ic_content_copy)
                         .setShowAsAction(show);
 
                 menu.add(Menu.NONE, ACTION_PASTE, Menu.NONE, android.R.string.paste)
+                        .setIcon(R.drawable.ic_paste)
                         .setEnabled(clipboard != null && clipboard.hasPrimaryClip())
                         .setShowAsAction(show);
 

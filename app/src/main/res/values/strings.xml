@@ -11,8 +11,7 @@
     <string name="black_night_theme">Black night theme</string>
     <string name="black_night_theme_summary">Use the pure black theme if night mode is enabled</string>
     <string name="dynamic_colors">Dynamic colors</string>
-    <string name="dynamic_colors_summary">Use the system wallpaper colors</string>
-    <string name="language">Language</string>
+    <string name="dynamic_colors_summary">Use the system wallpaper colors (Android 12+)</string>
     <string name="interpreter">Interpreter</string>
     <string name="console">Console</string>
     <string name="close">Close</string>
@@ -20,10 +19,12 @@
     <string name="toggle_autoscroll">Toggle auto scroll</string>
     <string name="share_transcript">Share transcript</string>
     <string name="select_url">Select URL</string>
+    <string name="more">More…</string>
     <string name="keep_screen_on">Keep screen on</string>
     <string name="font_size">Font size</string>
     <string name="font_style">Font style</string>
     <string name="color_scheme">Color scheme</string>
+    <string name="color_scheme_dynamic">Dynamic (Experimental)</string>
     <string name="about">About</string>
     <string name="version">Version</string>
     <string name="github">Github</string>
@@ -32,7 +33,6 @@
     <string name="coming_soon">Coming soon</string>
     <string name="show_files">Show files</string>
     <string name="hide_files">Hide files</string>
-    <string name="more">More…</string>
 
     <string name="ten_sp">10 sp</string>
     <string name="twelve_sp">12 sp</string>

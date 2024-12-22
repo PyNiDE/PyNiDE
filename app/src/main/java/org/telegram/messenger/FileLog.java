@@ -1,10 +1,9 @@
-package com.pynide.utils;
+package org.telegram.messenger;
 
 import android.util.Log;
 
 import com.pynide.BuildVars;
 
-import org.telegram.messenger.DispatchQueue;
 import org.telegram.messenger.time.FastDateFormat;
 
 import java.io.File;
@@ -24,13 +23,6 @@ public class FileLog {
 
     private static volatile FileLog Instance = null;
 
-    public FileLog() {
-        if (!BuildVars.DEBUG_VERSION) {
-            return;
-        }
-        init();
-    }
-
     public static FileLog getInstance() {
         var localInstance = Instance;
         if (localInstance == null) {
@@ -42,6 +34,13 @@ public class FileLog {
             }
         }
         return localInstance;
+    }
+
+    public FileLog() {
+        if (!BuildVars.DEBUG_VERSION) {
+            return;
+        }
+        init();
     }
 
     public void init() {

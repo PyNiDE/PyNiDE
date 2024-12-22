@@ -1,4 +1,4 @@
-package com.pynide.ui.launch
+package com.pynide.ui.editor
 
 import android.os.Bundle
 import android.view.Menu
@@ -17,19 +17,20 @@ import com.blankj.utilcode.util.ActivityUtils
 
 import com.pynide.R
 import com.pynide.app.IDEActivity
-import com.pynide.databinding.ActivityLaunchBinding
+import com.pynide.databinding.ActivityEditorBinding
 import com.pynide.terminal.TerminalVars
 import com.pynide.ui.settings.SettingsActivity
 import com.pynide.ui.terminal.TerminalActivity
 import com.pynide.utils.AndroidUtilities
 
 @Suppress("CustomSplashScreen")
-class LaunchActivity : IDEActivity() {
-    private lateinit var binding: ActivityLaunchBinding
+class EditorActivity : IDEActivity() {
+    private lateinit var binding: ActivityEditorBinding
+    private val drawer: DrawerLayout get() = binding.drawerLayout
 
     private val drawerOnBackPressedCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
-            binding.drawerLayout.closeDrawers()
+            drawer.closeDrawers()
         }
     }
 
@@ -38,7 +39,7 @@ class LaunchActivity : IDEActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        binding = ActivityLaunchBinding.inflate(layoutInflater)
+        binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setSupportActionBar(binding.appbarLaunch.toolbar)
@@ -48,13 +49,13 @@ class LaunchActivity : IDEActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.launch, menu)
-        AndroidUtilities.setOptionalIcons(menu, true, false)
+        menuInflater.inflate(R.menu.editor, menu)
+        AndroidUtilities.setOptionalIcons(menu, false)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        AndroidUtilities.setOptionalIcons(menu, false, true)
+        AndroidUtilities.setOptionalIcons(menu, true)
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -98,15 +99,15 @@ class LaunchActivity : IDEActivity() {
     private fun setupDrawerLayout() {
         val drawerToggle = ActionBarDrawerToggle(
             this,
-            binding.drawerLayout,
+            drawer,
             binding.appbarLaunch.toolbar,
             R.string.show_files,
             R.string.hide_files
         )
-        binding.drawerLayout.addDrawerListener(drawerToggle)
+        drawer.addDrawerListener(drawerToggle)
         drawerToggle.syncState()
 
-        binding.drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+        drawer.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
             override fun onDrawerOpened(drawerView: View) {
                 drawerOnBackPressedCallback.isEnabled = true
             }
@@ -116,10 +117,11 @@ class LaunchActivity : IDEActivity() {
             }
         })
 
-        binding.drawerLayout.post {
-            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+        drawer.post {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawerOnBackPressedCallback.isEnabled = true
             }
         }
+        onBackPressedDispatcher.addCallback(drawerOnBackPressedCallback)
     }
 }

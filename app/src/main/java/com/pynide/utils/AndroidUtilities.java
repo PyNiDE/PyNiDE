@@ -3,8 +3,9 @@ package com.pynide.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.graphics.drawable.InsetDrawable;
-import android.os.Environment;
+import android.os.Build;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -19,9 +20,44 @@ import androidx.core.view.WindowInsetsCompat;
 import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.Utils;
 
-import java.io.File;
+import org.telegram.messenger.FileLog;
+
+import java.io.IOException;
+import java.util.Hashtable;
 
 public class AndroidUtilities {
+    public static final String ASSETS_FONT_PREFIX = "fonts/";
+
+    private static final Hashtable<String, Typeface> typefaceCache = new Hashtable<>();
+
+    @Nullable
+    public static Typeface getTypeface(@NonNull String assetPath) {
+        synchronized (typefaceCache) {
+            if (!typefaceCache.containsKey(assetPath)) {
+                try {
+                    Typeface typeface;
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        Typeface.Builder builder = new Typeface.Builder(Utils.getApp().getAssets(), assetPath);
+                        if (assetPath.contains("medium")) {
+                            builder.setWeight(700);
+                        }
+                        if (assetPath.contains("italic")) {
+                            builder.setItalic(true);
+                        }
+                        typeface = builder.build();
+                    } else {
+                        typeface = Typeface.createFromAsset(Utils.getApp().getAssets(), assetPath);
+                    }
+                    typefaceCache.put(assetPath, typeface);
+                } catch (Exception e) {
+                    FileLog.e("Could not get typeface '" + assetPath + "' because " + e.getMessage());
+                    return null;
+                }
+            }
+            return typefaceCache.get(assetPath);
+        }
+    }
+
     public static void toggleIme(@Nullable final Window window, @Nullable final View view, final boolean show) {
         if (window == null || view == null) return;
         final var insetsController = WindowCompat.getInsetsController(window, view);
@@ -52,9 +88,11 @@ public class AndroidUtilities {
     }
 
     @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@NonNull final MenuBuilder menuBuilder, final boolean visible, final boolean padding) {
-        if (visible) menuBuilder.setOptionalIconsVisible(true);
-        if (!padding) return;
+    private static void setOptionalIcons(@NonNull final MenuBuilder menuBuilder, final boolean applyInsets) {
+        if (!applyInsets) {
+            menuBuilder.setOptionalIconsVisible(true);
+            return;
+        }
         for (final var item : menuBuilder.getVisibleItems()) {
             final var icon = item.getIcon();
             if (icon instanceof InsetDrawable) return;
@@ -66,9 +104,11 @@ public class AndroidUtilities {
     }
 
     @SuppressLint("RestrictedApi")
-    public static void setOptionalIcons(@Nullable final Menu menu, final boolean visible, final boolean padding) {
+    public static void setOptionalIcons(@Nullable final Menu menu, final boolean applyInsets) {
         if (menu == null) return;
-        if (menu instanceof MenuBuilder) setOptionalIcons((MenuBuilder) menu, visible, padding);
+        if (menu instanceof MenuBuilder) {
+            setOptionalIcons((MenuBuilder) menu, applyInsets);
+        }
     }
 
     public static boolean isNightMode(@Nullable final Configuration configuration) {
@@ -81,34 +121,5 @@ public class AndroidUtilities {
         if (context == null) return false;
         final var configuration = context.getResources().getConfiguration();
         return isNightMode(configuration);
-    }
-
-    @Nullable
-    public static File getLogsDir() {
-        try {
-            if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-                final var path = Utils.getApp().getExternalFilesDir(null);
-                final var dir = new File(path, "logs");
-                dir.mkdirs();
-                return dir;
-            }
-        } catch (Exception ignored) {
-
-        }
-        try {
-            final var dir = new File(Utils.getApp().getCacheDir(), "logs");
-            dir.mkdirs();
-            return dir;
-        } catch (Exception ignored) {
-
-        }
-        try {
-            final var dir = new File(Utils.getApp().getFilesDir(), "logs");
-            dir.mkdirs();
-            return dir;
-        } catch (Exception ignored) {
-
-        }
-        return null;
     }
 }

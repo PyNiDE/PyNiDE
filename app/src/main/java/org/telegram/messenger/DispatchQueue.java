@@ -14,8 +14,6 @@ import android.os.Message;
 import android.os.Process;
 import android.os.SystemClock;
 
-import com.pynide.utils.FileLog;
-
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 

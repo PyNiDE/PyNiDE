@@ -1,9 +1,10 @@
-package com.pynide.terminal
+package com.pynide.utils
 
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalSessionClient
 
-class EmptyTerminalSessionClient : com.termux.terminal.TerminalSessionClient {
+class EmptyTerminalSessionClientImpl : TerminalSessionClient {
     override fun onTextChanged(changedSession: TerminalSession) {
 
     }

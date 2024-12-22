@@ -5,11 +5,12 @@ import com.blankj.utilcode.util.StringUtils
 
 import com.pynide.ui.terminal.TerminalActivity
 
+import com.termux.terminal.BellHandler
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalSessionClient
 
-class TerminalSessionClient(private val activity: TerminalActivity) :
-    com.termux.terminal.TerminalSessionClient {
+class TerminalSessionClientImpl(private val activity: TerminalActivity) : TerminalSessionClient {
     private val isVisible: Boolean get() = activity.isActivityVisible
 
     override fun onTextChanged(changedSession: TerminalSession) {
@@ -29,7 +30,7 @@ class TerminalSessionClient(private val activity: TerminalActivity) :
             return
         }
         if ((finishedSession.exitStatus == 0 || finishedSession.exitStatus == 130)) {
-            removeFinishedSession(finishedSession)
+            activity.finish()
         }
     }
 
@@ -95,20 +96,5 @@ class TerminalSessionClient(private val activity: TerminalActivity) :
 
     override fun logStackTrace(tag: String?, e: Exception?) {
 
-    }
-
-    fun removeFinishedSession(finishedSession: TerminalSession?) {
-        val service = activity.terminalService ?: return
-        var index = service.removeSession(finishedSession)
-        val size = service.sessions.size
-        if (size == 0) {
-            activity.finish()
-        } else {
-            if (index >= size) index = size - 1
-            val session = service.getSession(index)
-            if (session != null) {
-                activity.setCurrentSession(session)
-            }
-        }
     }
 }

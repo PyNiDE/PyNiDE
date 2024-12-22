@@ -1,4 +1,4 @@
-package com.pynide.terminal;
+package com.termux.terminal;
 
 import android.os.Build;
 import android.os.Handler;
@@ -9,7 +9,7 @@ import android.os.Vibrator;
 
 import com.blankj.utilcode.util.Utils;
 
-import com.pynide.utils.FileLog;
+import org.telegram.messenger.FileLog;
 
 public class BellHandler {
     private static final long DURATION = 50;

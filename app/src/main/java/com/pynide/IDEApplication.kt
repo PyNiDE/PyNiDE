@@ -6,8 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 
 import com.blankj.utilcode.util.Utils
 
-import com.pynide.utils.FileLog
-import com.pynide.utils.LocaleDelegate
+import org.telegram.messenger.FileLog
 
 class IDEApplication : Application() {
     override fun onCreate() {
@@ -16,7 +15,6 @@ class IDEApplication : Application() {
         NativeLoader.initNativeLibs()
         IDESettings.initialize(this)
 
-        LocaleDelegate.defaultLocale = IDESettings.getLocale()
         AppCompatDelegate.setDefaultNightMode(IDESettings.getNightMode())
 
         FileLog.d("app initied")

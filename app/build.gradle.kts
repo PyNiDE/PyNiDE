@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.themebuilder)
-    alias(libs.plugins.autoresconfig)
 }
 
 android {
@@ -20,6 +19,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        resourceConfigurations += "en"
 
         externalNativeBuild {
             cmake {
@@ -90,13 +90,6 @@ materialThemeBuilder {
     }
     generatePaletteAttributes = true
     generateTextColors = true
-}
-
-autoResConfig {
-    generatedClassFullName = "com.pynide.IDELocales"
-    generateRes = false
-    generatedArrayFirstItem = "SYSTEM"
-    generateLocaleConfig = true
 }
 
 dependencies {

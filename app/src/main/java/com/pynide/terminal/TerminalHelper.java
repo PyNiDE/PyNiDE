@@ -1,5 +1,7 @@
 package com.pynide.terminal;
 
+import static com.pynide.utils.AndroidUtilities.ASSETS_FONT_PREFIX;
+
 import android.graphics.Typeface;
 
 import androidx.annotation.NonNull;
@@ -15,11 +17,13 @@ import com.blankj.utilcode.util.Utils;
 import com.pynide.BuildVars;
 import com.pynide.IDESettings;
 import com.pynide.R;
-import com.pynide.utils.FileLog;
+import com.pynide.utils.AndroidUtilities;
 import com.pynide.utils.Utilities;
 
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
+
+import org.telegram.messenger.FileLog;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +39,8 @@ import java.util.Properties;
 import kotlin.collections.MapsKt;
 
 public class TerminalHelper {
+    private static final String ASSETS_COLOR_SCHEME_PREFIX = "terminal/colors/";
+
     public static final String KEY_KEEP_SCREEN_ON = "terminal_keep_screen_on";
     public static final String KEY_FONT_SIZE = "terminal_font_size";
     public static final String KEY_FONT_STYLE = "terminal_font_style";
@@ -42,7 +48,9 @@ public class TerminalHelper {
 
     public static final int DEFAULT_FONT_SIZE = 14;
     public static final String DEFAULT_FONT_STYLE = "reddit.ttf";
-    public static final String DEFAULT_COLOR_SCHEME = "material.properties";
+    public static final String DEFAULT_COLOR_SCHEME = "DYNAMIC";
+
+    private static final Map<String, String> colorSchemesCache = new HashMap<>();
 
     public static boolean isKeepScreenOn() {
         return IDESettings.getPreferences().getBoolean(KEY_KEEP_SCREEN_ON, true);
@@ -60,36 +68,49 @@ public class TerminalHelper {
         return IDESettings.getPreferences().getString(KEY_FONT_STYLE, DEFAULT_FONT_STYLE);
     }
 
+    @Nullable
     public static Typeface getFontStyleTypeface() {
-        final var fontStyle = String.format("fonts/%s", getFontStyle());
-        return Typeface.createFromAsset(Utils.getApp().getAssets(), fontStyle);
+        final var fontStyle = ASSETS_FONT_PREFIX + getFontStyle();
+        return AndroidUtilities.getTypeface(fontStyle);
     }
 
     public static String getColorScheme() {
         return IDESettings.getPreferences().getString(KEY_COLOR_SCHEME, DEFAULT_COLOR_SCHEME);
     }
 
-    public static Properties getColorSchemeProperties() throws IOException {
-        final var colorScheme = String.format("terminal/colors/%s", getColorScheme());
-        final var properties = new Properties();
-        try (final var in = Utils.getApp().getAssets().open(colorScheme)) {
-            properties.load(in);
+    @Nullable
+    public static Properties getColorSchemeProperties() {
+        if (getColorScheme().equals(DEFAULT_COLOR_SCHEME)) return null;
+        final var colorScheme = ASSETS_COLOR_SCHEME_PREFIX + getColorScheme();
+        try {
+            final var properties = new Properties();
+            try (final var in = Utils.getApp().getAssets().open(colorScheme)) {
+                properties.load(in);
+            }
+            return properties;
+        } catch (IOException e) {
+            FileLog.e("Could not get colorScheme properties '" + colorScheme + "' because " + e.getMessage());
+            return null;
         }
-        return properties;
     }
 
     @NonNull
-    public static Map<String, String> getAllColorSchemeNames() throws IOException {
-        final var names = new HashMap<String, String>();
-        final var namesArray = Arrays.stream(Utils.getApp().getAssets().list("terminal/colors")).filter(s -> s.endsWith(".properties"));
-        namesArray.forEach(name -> {
-            var temp = name.replace('-', ' ');
-            final var dotIndex = temp.lastIndexOf('.');
-            if (dotIndex != -1) temp = temp.substring(0, dotIndex);
-            final var displayName = Utilities.capitalize(temp);
-            names.put(name, displayName);
-        });
-        return MapsKt.toSortedMap(names);
+    public static Map<String, String> getColorSchemes() throws IOException {
+        synchronized (colorSchemesCache) {
+            if (colorSchemesCache.isEmpty()) {
+                colorSchemesCache.put(Utils.getApp().getString(R.string.color_scheme_dynamic), DEFAULT_COLOR_SCHEME);
+
+                final var tempArray = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_COLOR_SCHEME_PREFIX)).filter(s -> s.endsWith(".properties")).sorted();
+                tempArray.forEach(name -> {
+                    var temp = name.replace('-', ' ');
+                    final var dotIndex = temp.lastIndexOf('.');
+                    if (dotIndex != -1) temp = temp.substring(0, dotIndex);
+                    final var displayName = Utilities.capitalize(temp);
+                    colorSchemesCache.put(displayName, name);
+                });
+            }
+            return colorSchemesCache;
+        }
     }
 
     @NonNull

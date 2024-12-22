@@ -3,13 +3,11 @@ package com.pynide.ui.settings
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.ViewGroup
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
-import androidx.core.text.HtmlCompat
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -20,7 +18,6 @@ import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.ToastUtils
 
 import com.pynide.BuildVars
-import com.pynide.IDELocales
 import com.pynide.IDESettings
 import com.pynide.R
 import com.pynide.app.ThemeHelper
@@ -29,11 +26,9 @@ import com.pynide.app.ThemeHelper.KEY_DYNAMIC_COLORS
 import com.pynide.editor.EditorHelper
 import com.pynide.terminal.TerminalHelper
 import com.pynide.utils.AndroidUtilities
-import com.pynide.utils.LocaleDelegate
 
-import java.util.Locale
+import rikka.preference.simplemenu.IntegerSimpleMenuPreference
 
-import com.pynide.IDESettings.LANGUAGE as KEY_LANGUAGE
 import com.pynide.IDESettings.NIGHT_MODE as KEY_NIGHT_MODE
 import com.pynide.terminal.TerminalHelper.KEY_COLOR_SCHEME as KEY_TERMINAL_COLOR_SCHEME
 import com.pynide.terminal.TerminalHelper.KEY_FONT_SIZE as KEY_TERMINAL_FONT_SIZE
@@ -44,7 +39,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var nightModePreference: IntegerSimpleMenuPreference
     private lateinit var blackNightThemePreference: TwoStatePreference
     private lateinit var dynamicColorsPreference: TwoStatePreference
-    private lateinit var languagePreference: ListPreference
     private lateinit var terminalKeepScreenOnPreference: TwoStatePreference
     private lateinit var terminalFontSizePreference: IntegerSimpleMenuPreference
     private lateinit var terminalFontStylePreference: ListPreference
@@ -63,7 +57,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         nightModePreference = findPreference(KEY_NIGHT_MODE)!!
         blackNightThemePreference = findPreference(KEY_BLACK_NIGHT_THEME)!!
         dynamicColorsPreference = findPreference(KEY_DYNAMIC_COLORS)!!
-        languagePreference = findPreference(KEY_LANGUAGE)!!
         terminalKeepScreenOnPreference = findPreference(KEY_TERMINAL_KEEP_SCREEN_ON)!!
         terminalFontSizePreference = findPreference(KEY_TERMINAL_FONT_SIZE)!!
         terminalFontStylePreference = findPreference(KEY_TERMINAL_FONT_STYLE)!!
@@ -95,7 +88,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     true
                 }
         } else {
-            blackNightThemePreference.isVisible = false
+            blackNightThemePreference.isEnabled = false
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -110,23 +103,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     true
                 }
         } else {
-            dynamicColorsPreference.isVisible = false
+            dynamicColorsPreference.isEnabled = false
         }
-
-        languagePreference.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
-                if (newValue is String) {
-                    val locale = if ("SYSTEM" == newValue) {
-                        LocaleDelegate.systemLocale
-                    } else {
-                        Locale.forLanguageTag(newValue)
-                    }
-                    LocaleDelegate.defaultLocale = locale
-                    ActivityCompat.recreate(requireActivity())
-                }
-                true
-            }
-        setupLocalePreference()
 
         terminalKeepScreenOnPreference.isChecked = TerminalHelper.isKeepScreenOn()
         terminalFontSizePreference.setDefaultValue(TerminalHelper.DEFAULT_FONT_SIZE)
@@ -173,84 +151,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupTerminalFontStylePreference() {
-        val allNames = EditorHelper.getAllFontNames()
-        val fonts = allNames.keys.toTypedArray()
-        val displayFonts = allNames.values.toTypedArray()
+        val fonts = EditorHelper.getFonts()
+        val fontNames = fonts.values.toTypedArray()
+        val displayFonts = fonts.keys.toTypedArray()
         terminalFontStylePreference.entries = displayFonts
-        terminalFontStylePreference.entryValues = fonts
+        terminalFontStylePreference.entryValues = fontNames
     }
 
     private fun setupTerminalColorSchemePreference() {
-        val allNames = TerminalHelper.getAllColorSchemeNames()
-        val colorSchemes = allNames.keys.toTypedArray()
-        val displayColorSchemes = allNames.values.toTypedArray()
+        val colorSchemes = TerminalHelper.getColorSchemes()
+        val colorSchemeNames = colorSchemes.values.toTypedArray()
+        val displayColorSchemes = colorSchemes.keys.toTypedArray()
         terminalColorSchemePreference.entries = displayColorSchemes
-        terminalColorSchemePreference.entryValues = colorSchemes
-    }
-
-    private fun setupLocalePreference() {
-        val localeTags = IDELocales.LOCALES
-        val displayLocaleTags = IDELocales.DISPLAY_LOCALES
-
-        languagePreference.entries = displayLocaleTags
-        languagePreference.entryValues = localeTags
-
-        val currentLocaleTag = languagePreference.value
-        val currentLocaleIndex = localeTags.indexOf(currentLocaleTag)
-        val currentLocale = IDESettings.getLocale()
-        val localizedLocales = mutableListOf<CharSequence>()
-
-        for ((index, displayLocale) in displayLocaleTags.withIndex()) {
-            if (index == 0) {
-                localizedLocales.add(getString(R.string.follow_system))
-                continue
-            }
-
-            val locale = Locale.forLanguageTag(displayLocale.toString())
-            val localeName = if (!TextUtils.isEmpty(locale.script)) {
-                locale.getDisplayScript(locale)
-            } else {
-                locale.getDisplayName(locale)
-            }
-
-            val localizedLocaleName = if (!TextUtils.isEmpty(locale.script)) {
-                locale.getDisplayScript(currentLocale)
-            } else {
-                locale.getDisplayName(currentLocale)
-            }
-
-            localizedLocales.add(
-                if (index != currentLocaleIndex) {
-                    HtmlCompat.fromHtml(
-                        "$localeName<br><small>$localizedLocaleName<small>",
-                        HtmlCompat.FROM_HTML_MODE_COMPACT
-                    )
-                } else {
-                    localizedLocaleName
-                }
-            )
-        }
-
-        languagePreference.entries = localizedLocales.toTypedArray()
-
-        languagePreference.summary = when {
-            TextUtils.isEmpty(currentLocaleTag) || "SYSTEM" == currentLocaleTag -> {
-                getString(R.string.follow_system)
-            }
-
-            currentLocaleIndex != -1 -> {
-                val localizedLocale = localizedLocales[currentLocaleIndex]
-                val newLineIndex = localizedLocale.indexOf('\n')
-                if (newLineIndex == -1) {
-                    localizedLocale.toString()
-                } else {
-                    localizedLocale.subSequence(0, newLineIndex).toString()
-                }
-            }
-
-            else -> {
-                ""
-            }
-        }
+        terminalColorSchemePreference.entryValues = colorSchemeNames
     }
 }

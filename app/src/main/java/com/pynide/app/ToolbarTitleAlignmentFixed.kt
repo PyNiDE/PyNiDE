@@ -1,4 +1,4 @@
-package com.pynide.utils
+package com.pynide.app
 
 import android.content.Context
 import android.util.AttributeSet
@@ -8,10 +8,10 @@ import androidx.appcompat.widget.Toolbar
 
 import rikka.layoutinflater.view.LayoutInflaterFactory
 
-class ToolbarTitleAlignmentFix : LayoutInflaterFactory.OnViewCreatedListener {
+class ToolbarTitleAlignmentFixed : LayoutInflaterFactory.OnViewCreatedListener {
     companion object {
         @JvmStatic
-        val LISTENER = ToolbarTitleAlignmentFix()
+        val LISTENER = ToolbarTitleAlignmentFixed()
     }
 
     override fun onViewCreated(

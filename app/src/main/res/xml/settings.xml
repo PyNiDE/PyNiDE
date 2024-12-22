@@ -4,7 +4,7 @@
         app:key="general"
         app:title="@string/general">
 
-        <com.pynide.ui.settings.IntegerSimpleMenuPreference
+        <rikka.preference.simplemenu.IntegerSimpleMenuPreference
             app:entries="@array/night_mode"
             app:entryValues="@array/night_mode_value"
             app:icon="@drawable/ic_format_paint"
@@ -23,13 +23,6 @@
             app:key="dynamic_colors"
             app:summary="@string/dynamic_colors_summary"
             app:title="@string/dynamic_colors" />
-
-        <rikka.preference.SimpleMenuPreference
-            app:defaultValue="SYSTEM"
-            app:icon="@drawable/ic_language"
-            app:key="language"
-            app:summary="%s"
-            app:title="@string/language" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -41,7 +34,7 @@
             app:key="terminal_keep_screen_on"
             app:title="@string/keep_screen_on" />
 
-        <com.pynide.ui.settings.IntegerSimpleMenuPreference
+        <rikka.preference.simplemenu.IntegerSimpleMenuPreference
             app:defaultValue="14"
             app:entries="@array/terminal_text_size"
             app:entryValues="@array/terminal_text_size_value"
@@ -58,7 +51,7 @@
             app:title="@string/font_style" />
 
         <rikka.preference.SimpleMenuPreference
-            app:defaultValue="material.properties"
+            app:defaultValue="DYNAMIC"
             app:icon="@drawable/ic_palette"
             app:key="terminal_color_scheme"
             app:summary="%s"

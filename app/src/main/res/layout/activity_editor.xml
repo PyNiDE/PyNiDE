@@ -9,7 +9,7 @@
 
     <include
         android:id="@+id/appbar_launch"
-        layout="@layout/appbar_launch" />
+        layout="@layout/appbar_editor" />
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"

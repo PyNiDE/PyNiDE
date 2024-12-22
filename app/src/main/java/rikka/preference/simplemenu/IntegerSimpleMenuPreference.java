@@ -1,4 +1,4 @@
-package com.pynide.ui.settings;
+package rikka.preference.simplemenu;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,9 +15,6 @@ import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.content.res.TypedArrayUtils;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
-
-import rikka.preference.simplemenu.R;
-import rikka.preference.simplemenu.SimpleMenuPopupWindow;
 
 /**
  * a {@link rikka.preference.SimpleMenuPreference} to implement night mode in user interface settings.

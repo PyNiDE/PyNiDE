@@ -8,12 +8,12 @@ import com.pynide.ui.terminal.TerminalActivity
 import com.pynide.utils.AndroidUtilities
 
 import com.termux.terminal.TerminalSession
+import com.termux.view.TerminalViewClient
 
-class TerminalViewClient(
-    private val activity: TerminalActivity,
-    private val sessionClient: TerminalSessionClient?
-) : com.termux.view.TerminalViewClient {
-    var copyMode: Boolean = false
+class TerminalViewClientImpl(private val activity: TerminalActivity) : TerminalViewClient {
+    private var copyMode: Boolean = false
+
+    val isCopyMode: Boolean get() = copyMode
 
     override fun onScale(scale: Float): Float {
         return 1.0f
@@ -47,12 +47,13 @@ class TerminalViewClient(
         if (this.copyMode != copyMode) {
             this.copyMode = copyMode
             activity.invalidateOptionsMenu()
+            activity.terminalOnBackPressedCallback.isEnabled = copyMode
         }
     }
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_ENTER && session?.isRunning == false) {
-            sessionClient?.removeFinishedSession(session)
+            activity.finish()
             return true
         }
         return false

@@ -21,9 +21,12 @@ import com.blankj.utilcode.util.ResourceUtils
 import com.pynide.BuildVars
 import com.pynide.R
 import com.pynide.ui.terminal.TerminalActivity
-import com.pynide.utils.FileLog
+import com.pynide.utils.EmptyTerminalSessionClientImpl
 
 import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalSessionClient
+
+import org.telegram.messenger.FileLog
 
 import java.io.File
 
@@ -34,11 +37,11 @@ class TerminalService : Service() {
 
     private val serviceBinder = ServiceBinder()
     private val terminalSessions = mutableListOf<TerminalSession>()
-    private var terminalSessionClient: TerminalSessionClient? = null
-    private var emptyTerminalSessionClient = EmptyTerminalSessionClient()
+    private var terminalSessionClient: TerminalSessionClientImpl? = null
+    private var emptyTerminalSessionClient = EmptyTerminalSessionClientImpl()
     private var wantsToStop: Boolean = false
 
-    private val notificationService by lazy { getSystemService(NotificationManager::class.java) }
+    private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
 
     @get:Synchronized
     val sessions: List<TerminalSession> get() = terminalSessions
@@ -47,7 +50,7 @@ class TerminalService : Service() {
     val isWantsToStop: Boolean get() = wantsToStop
 
     @get:Synchronized
-    val sessionClient: com.termux.terminal.TerminalSessionClient
+    val sessionClient: TerminalSessionClient
         get() = terminalSessionClient ?: emptyTerminalSessionClient
 
     override fun onBind(intent: Intent?): IBinder {
@@ -97,7 +100,7 @@ class TerminalService : Service() {
         } catch (e: Throwable) {
             FileLog.e(e)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && e is ForegroundServiceStartNotAllowedException) {
-                notificationService.notify(NOTIFICATION_ID, createNotification())
+                notificationManager.notify(NOTIFICATION_ID, createNotification())
             }
         }
     }
@@ -130,7 +133,7 @@ class TerminalService : Service() {
     }
 
     @Synchronized
-    fun setSessionClient(sessionClient: TerminalSessionClient?) {
+    fun setSessionClient(sessionClient: TerminalSessionClientImpl?) {
         this.terminalSessionClient = sessionClient
     }
 
@@ -269,7 +272,7 @@ class TerminalService : Service() {
         if (terminalSessions.isEmpty()) {
             requestStopService()
         } else {
-            notificationService.notify(NOTIFICATION_ID, createNotification())
+            notificationManager.notify(NOTIFICATION_ID, createNotification())
         }
     }
 

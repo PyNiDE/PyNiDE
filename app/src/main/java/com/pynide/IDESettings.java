@@ -3,19 +3,15 @@ package com.pynide;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.pynide.utils.EmptySharedPreferencesImpl;
 
-import java.util.Locale;
-
 public class IDESettings {
     public static final String NAME = "settings";
     public static final String NIGHT_MODE = "night_mode";
-    public static final String LANGUAGE = "language";
 
     private static SharedPreferences sPreferences;
 
@@ -49,13 +45,5 @@ public class IDESettings {
     @AppCompatDelegate.NightMode
     public static int getNightMode() {
         return getPreferences().getInt(NIGHT_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-    }
-
-    public static Locale getLocale() {
-        final var tag = getPreferences().getString(LANGUAGE, null);
-        if (TextUtils.isEmpty(tag) || "SYSTEM".equals(tag)) {
-            return Locale.getDefault();
-        }
-        return Locale.forLanguageTag(tag);
     }
 }

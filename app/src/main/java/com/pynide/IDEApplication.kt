@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 
 import com.blankj.utilcode.util.Utils
 
-import org.telegram.messenger.FileLog
+import com.pynide.utils.FileLog
 
 class IDEApplication : Application() {
     override fun onCreate() {

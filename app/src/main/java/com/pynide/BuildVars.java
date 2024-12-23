@@ -1,6 +1,6 @@
 package com.pynide;
 
-import org.telegram.messenger.FileLog;
+import com.pynide.utils.FileLog;
 
 public class BuildVars {
     public static boolean DEBUG_VERSION = BuildConfig.DEBUG;

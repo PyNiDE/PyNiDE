@@ -13,6 +13,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.pynide.R;
+import com.pynide.utils.AndroidUtilities;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.WcWidth;
@@ -105,7 +106,7 @@ public class TextSelectionCursorController implements CursorController {
             }
         }
     }
-    
+
     public void setActionModeCallBacks() {
         final ActionMode.Callback callback = new ActionMode.Callback() {
             @Override
@@ -122,13 +123,18 @@ public class TextSelectionCursorController implements CursorController {
                         .setEnabled(clipboard != null && clipboard.hasPrimaryClip())
                         .setShowAsAction(show);
 
-                menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more);
+                menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more)
+                        .setIcon(R.drawable.ic_more_vert)
+                        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
+                AndroidUtilities.setOptionalIcons(menu, false);
                 return true;
             }
 
             @Override
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                return false;
+                AndroidUtilities.setOptionalIcons(menu, true);
+                return true;
             }
 
             @Override
@@ -166,7 +172,6 @@ public class TextSelectionCursorController implements CursorController {
             @Override
             public void onDestroyActionMode(ActionMode mode) {
             }
-
         };
 
         mActionMode = terminalView.startActionMode(new ActionMode.Callback2() {
@@ -370,18 +375,24 @@ public class TextSelectionCursorController implements CursorController {
         sel[3] = mSelX2;
     }
 
-    /** Get the currently selected text. */
+    /**
+     * Get the currently selected text.
+     */
     public String getSelectedText() {
         return terminalView.mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2);
     }
 
-    /** Get the selected text stored before "MORE" button was pressed on the context menu. */
+    /**
+     * Get the selected text stored before "MORE" button was pressed on the context menu.
+     */
     @Nullable
     public String getStoredSelectedText() {
         return mStoredSelectedText;
     }
 
-    /** Unset the selected text stored before "MORE" button was pressed on the context menu. */
+    /**
+     * Unset the selected text stored before "MORE" button was pressed on the context menu.
+     */
     public void unsetStoredSelectedText() {
         mStoredSelectedText = null;
     }

@@ -118,8 +118,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         terminalColorSchemePreference.value = TerminalHelper.getColorScheme()
         setupTerminalColorSchemePreference()
 
-        val temp = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
-        aboutVersionPreference.summary = temp
+        aboutVersionPreference.summary = String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE)
 
         aboutGithubPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             ToastUtils.showShort(R.string.coming_soon)

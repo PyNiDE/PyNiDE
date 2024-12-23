@@ -2,10 +2,11 @@ package com.pynide;
 
 import androidx.annotation.NonNull;
 
-import org.telegram.messenger.FileLog;
+import com.pynide.utils.FileLog;
 
 import java.util.Arrays;
 
+@SuppressWarnings("unused")
 public class NativeLoader {
     private final static String[] LIB_NAMES = {"pynide", "terminal"};
     private static volatile boolean nativeLoaded = false;

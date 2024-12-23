@@ -1,9 +1,10 @@
-package org.telegram.messenger;
+package com.pynide.utils;
 
 import android.util.Log;
 
 import com.pynide.BuildVars;
 
+import org.telegram.messenger.DispatchQueue;
 import org.telegram.messenger.time.FastDateFormat;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public class FileLog {
     private final static String TAG = "pynide";
     private boolean initied;

@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -14,21 +15,44 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.core.util.Pair;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.blankj.utilcode.util.ArrayUtils;
+import com.blankj.utilcode.util.CleanUtils;
+import com.blankj.utilcode.util.DeviceUtils;
+import com.blankj.utilcode.util.FileUtils;
 import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.Utils;
 
-import org.telegram.messenger.FileLog;
+import com.pynide.BuildVars;
+import com.pynide.R;
+import com.pynide.terminal.TerminalVars;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import kotlin.collections.MapsKt;
 
 public class AndroidUtilities {
+    private static final byte[] ELF_MAGIC = {0x7F, 'E', 'L', 'F'};
+    private static final char SHEBANG_START = '#';
+    private static final char SHEBANG_DELIMITER = '!';
+
     private static final Hashtable<String, Typeface> typefaceCache = new Hashtable<>();
 
     @Nullable
-    public static Typeface getTypeface(@NonNull String assetPath) {
+    public static Typeface getTypeface(@NonNull final String assetPath) {
         synchronized (typefaceCache) {
             if (!typefaceCache.containsKey(assetPath)) {
                 try {
@@ -118,5 +142,190 @@ public class AndroidUtilities {
         if (context == null) return false;
         final var configuration = context.getResources().getConfiguration();
         return isNightMode(configuration);
+    }
+
+    @Nullable
+    public static File getLogsDir() {
+        try {
+            if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+                final var path = Utils.getApp().getExternalFilesDir(null);
+                final var dir = new File(path, "logs");
+                dir.mkdirs();
+                return dir;
+            }
+        } catch (Exception ignored) {
+
+        }
+        try {
+            final var dir = new File(Utils.getApp().getCacheDir(), "logs");
+            dir.mkdirs();
+            return dir;
+        } catch (Exception ignored) {
+
+        }
+        try {
+            final var dir = new File(Utils.getApp().getFilesDir(), "logs");
+            dir.mkdirs();
+            return dir;
+        } catch (Exception ignored) {
+
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String extractShebang(@NonNull final File executable) {
+        try (final var inputStream = new FileInputStream(executable)) {
+            final var buffer = new byte[256];
+            final var bytesRead = inputStream.read(buffer);
+            if (bytesRead <= 0) {
+                return null;
+            }
+
+            if (Arrays.equals(Arrays.copyOfRange(buffer, 0, ELF_MAGIC.length), ELF_MAGIC)) {
+                return null;
+            }
+
+            if (buffer[0] == SHEBANG_START && buffer[1] == SHEBANG_DELIMITER) {
+                var shebang = new String(buffer, 2, bytesRead - 2, StandardCharsets.US_ASCII);
+                shebang = shebang.trim();
+
+                if (shebang.startsWith("/usr") || shebang.startsWith("/bin")) {
+                    final var binary = shebang.substring(shebang.lastIndexOf('/') + 1);
+                    return String.format("%s/bin/%s", TerminalVars.PREFIX_PATH, binary);
+                } else if (shebang.startsWith(TerminalVars.FILES_PATH)) {
+                    return shebang;
+                }
+            } else {
+                return String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
+            }
+        } catch (IOException e) {
+            FileLog.e(e);
+            return null;
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String extractShebang(@NonNull final String executablePath) {
+        return extractShebang(new File(executablePath));
+    }
+
+    @NonNull
+    public static Pair<File, List<String>> wrapCommandArguments(@NonNull final File executable, @NonNull final List<String> arguments, final boolean isLoginShell) {
+        final var interpreter = extractShebang(executable);
+        final var elf = interpreter == null ? executable.getAbsolutePath() : interpreter;
+
+        final var actualArguments = new ArrayList<String>();
+        final var processName = (isLoginShell ? "-" : "") + executable.getName();
+        actualArguments.add(processName);
+
+        final String actualElf;
+        if (DeviceUtils.getSDKVersionCode() >= 29 && elf.startsWith(TerminalVars.FILES_PATH)) {
+            actualElf = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
+            actualArguments.add(actualElf);
+        } else {
+            actualElf = elf;
+        }
+
+        if (interpreter != null) {
+            actualArguments.add(executable.getAbsolutePath());
+        }
+
+        actualArguments.addAll(arguments);
+        return Pair.create(new File(actualElf), actualArguments);
+    }
+
+    @NonNull
+    public static Pair<String, String[]> wrapCommandArguments(@NonNull final String executablePath, @NonNull final String[] argumentsArray, final boolean isLoginShell) {
+        final var interpreter = extractShebang(executablePath);
+        final var elf = interpreter == null ? executablePath : interpreter;
+
+        final var actualArgumentsArray = new String[0];
+        final var processName = (isLoginShell ? "-" : "") + FileUtils.getFileName(executablePath);
+        ArrayUtils.add(actualArgumentsArray, processName);
+
+        final String actualElf;
+        if (DeviceUtils.getSDKVersionCode() >= 29 && elf.startsWith(TerminalVars.FILES_PATH)) {
+            actualElf = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
+            ArrayUtils.add(actualArgumentsArray, actualElf);
+        } else {
+            actualElf = elf;
+        }
+
+        if (interpreter != null) {
+            ArrayUtils.add(actualArgumentsArray, executablePath);
+        }
+
+        ArrayUtils.add(actualArgumentsArray, argumentsArray);
+        return Pair.create(actualElf, actualArgumentsArray);
+    }
+
+    @NonNull
+    public static Map<String, String> createEnvironmentVars() {
+        final var environmentVars = new HashMap<String, String>();
+        var temp = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
+
+        FileUtils.createOrExistsDir(TerminalVars.FILES_PATH);
+        FileUtils.createOrExistsDir(TerminalVars.HOME_PATH);
+        FileUtils.createOrExistsDir(TerminalVars.PREFIX_PATH);
+        FileUtils.createOrExistsDir(temp);
+
+        environmentVars.put("HOME", TerminalVars.HOME_PATH);
+        environmentVars.put("PREFIX", TerminalVars.PREFIX_PATH);
+        environmentVars.put("TMPDIR", temp);
+        environmentVars.put("TMP", temp);
+        environmentVars.put("TERM", "xterm-256color");
+        environmentVars.put("COLORTERM", "truecolor");
+        environmentVars.put("LANG", "en_US.UTF-8");
+
+        temp = String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
+        if (FileUtils.isFileExists(temp)) {
+            environmentVars.put("SHELL", temp);
+        } else {
+            environmentVars.put("SHELL", "/system/bin/sh");
+        }
+
+        environmentVars.put("IDE_NAME", Utils.getApp().getString(R.string.app_name));
+        environmentVars.put("IDE_DEBUG", String.valueOf(BuildVars.DEBUG_VERSION));
+        environmentVars.put("IDE_VERSION", String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE));
+        environmentVars.put("IDE_PACKAGE", BuildVars.PACKAGE_NAME);
+
+        temp = System.getenv("PATH");
+        temp = String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp);
+        environmentVars.put("PATH", temp);
+
+        temp = System.getenv("LD_LIBRARY_PATH");
+        if (temp == null) {
+            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib", TerminalVars.PREFIX_PATH));
+        } else {
+            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp));
+        }
+
+        temp = String.format("%s/lib/terminal-exec.so", TerminalVars.PREFIX_PATH);
+        if (FileUtils.isFileExists(temp)) {
+            environmentVars.put("LD_PRELOAD", temp);
+
+            if (DeviceUtils.getSDKVersionCode() >= 29) {
+                environmentVars.put("BASEDIR", TerminalVars.FILES_PATH);
+                environmentVars.put("PROC_64BIT", String.valueOf(android.os.Process.is64Bit()));
+            }
+        }
+        return MapsKt.toSortedMap(environmentVars);
+    }
+
+    @NonNull
+    public static String[] createEnvironmentVarsArray() {
+        final var environmentVars = createEnvironmentVars();
+        final var environmentVarsList = new ArrayList<String>(environmentVars.size());
+        environmentVars.forEach((key, value) -> environmentVarsList.add(key + "=" + value));
+        Collections.sort(environmentVarsList);
+        return environmentVarsList.toArray(new String[0]);
+    }
+
+    public static void clearTMPDIR() {
+        final var tmpDir = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
+        CleanUtils.cleanCustomDir(tmpDir);
+        FileUtils.createOrExistsDir(tmpDir);
     }
 }

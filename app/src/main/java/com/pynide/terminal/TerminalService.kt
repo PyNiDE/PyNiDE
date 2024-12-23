@@ -21,12 +21,12 @@ import com.blankj.utilcode.util.ResourceUtils
 import com.pynide.BuildVars
 import com.pynide.R
 import com.pynide.ui.terminal.TerminalActivity
+import com.pynide.utils.AndroidUtilities
 import com.pynide.utils.EmptyTerminalSessionClientImpl
+import com.pynide.utils.FileLog
 
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
-
-import org.telegram.messenger.FileLog
 
 import java.io.File
 
@@ -81,7 +81,7 @@ class TerminalService : Service() {
         if (!wantsToStop) {
             closeAllSessions()
         }
-        TerminalHelper.clearTMPDIR()
+        AndroidUtilities.clearTMPDIR()
         runStopForeground()
         super.onDestroy()
     }

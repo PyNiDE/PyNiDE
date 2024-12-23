@@ -5,7 +5,7 @@ import com.blankj.utilcode.util.StringUtils
 
 import com.pynide.ui.terminal.TerminalActivity
 
-import com.termux.terminal.BellHandler
+import com.termux.BellHandler
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient

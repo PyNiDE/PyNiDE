@@ -13,7 +13,6 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.pynide.R;
-import com.pynide.utils.AndroidUtilities;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.WcWidth;
@@ -126,15 +125,12 @@ public class TextSelectionCursorController implements CursorController {
                 menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more)
                         .setIcon(R.drawable.ic_more_vert)
                         .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-
-                AndroidUtilities.setOptionalIcons(menu, false);
                 return true;
             }
 
             @Override
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                AndroidUtilities.setOptionalIcons(menu, true);
-                return true;
+                return false;
             }
 
             @Override

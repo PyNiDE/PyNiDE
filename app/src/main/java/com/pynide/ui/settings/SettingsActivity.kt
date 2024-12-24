@@ -8,10 +8,10 @@ import androidx.activity.enableEdgeToEdge
 import com.blankj.utilcode.util.FragmentUtils
 
 import com.pynide.R
-import com.pynide.app.IDEActivity
+import com.pynide.app.BaseActivity
 import com.pynide.databinding.ActivitySettingsBinding
 
-class SettingsActivity : IDEActivity() {
+class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

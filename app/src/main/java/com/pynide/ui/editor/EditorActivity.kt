@@ -16,7 +16,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.blankj.utilcode.util.ActivityUtils
 
 import com.pynide.R
-import com.pynide.app.IDEActivity
+import com.pynide.app.BaseActivity
 import com.pynide.databinding.ActivityEditorBinding
 import com.pynide.terminal.TerminalVars
 import com.pynide.ui.settings.SettingsActivity
@@ -24,7 +24,7 @@ import com.pynide.ui.terminal.TerminalActivity
 import com.pynide.utils.AndroidUtilities
 
 @Suppress("CustomSplashScreen")
-class EditorActivity : IDEActivity() {
+class EditorActivity : BaseActivity() {
     private lateinit var binding: ActivityEditorBinding
     private val drawer: DrawerLayout get() = binding.drawerLayout
 

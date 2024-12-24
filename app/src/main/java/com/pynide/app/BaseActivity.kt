@@ -4,7 +4,7 @@ import android.content.res.Resources
 
 import com.pynide.R
 
-open class IDEActivity : MaterialActivity() {
+open class BaseActivity : MaterialActivity() {
     override fun computeUserThemeKey(): String {
         return ThemeHelper.getTheme(this) + ThemeHelper.isDynamicColors()
     }

@@ -13,9 +13,9 @@ import com.blankj.utilcode.util.Utils;
 
 import com.pynide.IDESettings;
 import com.pynide.R;
+import com.pynide.model.AssetFile;
 import com.pynide.utils.AndroidUtilities;
 import com.pynide.utils.FileLog;
-import com.pynide.utils.Utilities;
 
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -23,10 +23,10 @@ import com.termux.terminal.TerminalSessionClient;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class TerminalHelper {
     private static final String ASSETS_COLOR_SCHEME_PREFIX = "terminal/colors/";
@@ -40,7 +40,7 @@ public class TerminalHelper {
     public static final String DEFAULT_FONT_STYLE = "reddit.ttf";
     public static final String DEFAULT_COLOR_SCHEME = "DYNAMIC";
 
-    private static final Map<String, String> colorSchemesCache = new LinkedHashMap<>();
+    private static List<AssetFile> assetColorSchemes = null;
 
     public static boolean isKeepScreenOn() {
         return IDESettings.getPreferences().getBoolean(KEY_KEEP_SCREEN_ON, true);
@@ -60,8 +60,7 @@ public class TerminalHelper {
 
     @Nullable
     public static Typeface getFontStyleTypeface() {
-        final var fontStyle = ASSETS_FONT_PREFIX + getFontStyle();
-        return AndroidUtilities.getTypeface(fontStyle);
+        return AndroidUtilities.getTypeface(ASSETS_FONT_PREFIX + getFontStyle());
     }
 
     public static String getColorScheme() {
@@ -85,22 +84,20 @@ public class TerminalHelper {
     }
 
     @NonNull
-    public static Map<String, String> getColorSchemes() throws IOException {
-        synchronized (colorSchemesCache) {
-            if (colorSchemesCache.isEmpty()) {
-                colorSchemesCache.put(Utils.getApp().getString(R.string.color_scheme_dynamic), DEFAULT_COLOR_SCHEME);
-
-                final var tempArray = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_COLOR_SCHEME_PREFIX)).filter(s -> s.endsWith(".properties"));
-                tempArray.forEach(name -> {
-                    var temp = name.replace('-', ' ');
-                    final var dotIndex = temp.lastIndexOf('.');
-                    if (dotIndex != -1) temp = temp.substring(0, dotIndex);
-                    final var displayName = Utilities.capitalize(temp);
-                    colorSchemesCache.put(displayName, name);
-                });
+    public static List<AssetFile> getAssetColorSchemes() {
+        if (assetColorSchemes == null) {
+            try {
+                assetColorSchemes = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_COLOR_SCHEME_PREFIX))
+                        .filter(s -> s.endsWith(".properties"))
+                        .map(AssetFile::new)
+                        .sorted(Comparator.comparing(s -> s.displayName))
+                        .collect(Collectors.toList());
+                assetColorSchemes.add(0, new AssetFile(DEFAULT_COLOR_SCHEME, Utils.getApp().getString(R.string.color_scheme_dynamic)));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load color-schemes from assets because " + e.getMessage());
             }
-            return colorSchemesCache;
         }
+        return assetColorSchemes;
     }
 
     @NonNull
@@ -117,7 +114,7 @@ public class TerminalHelper {
         final var executablePath = executable == null ? "/system/bin/sh" : executable.getAbsolutePath();
         final var workingDirectoryPath = workingDirectory == null ? TerminalVars.HOME_PATH : workingDirectory.getAbsolutePath();
         final var argumentsArray = arguments == null ? new String[0] : arguments.toArray(new String[0]);
-        final var environmentVarsArray = AndroidUtilities.createEnvironmentVarsArray();
+        final var environmentVarsArray = AndroidUtilities.getEnvironmentVarsArray();
         final var commandArguments = AndroidUtilities.wrapCommandArguments(executablePath, argumentsArray, isLoginShell);
 
         final var newSession = new TerminalSession(commandArguments.first, workingDirectoryPath, commandArguments.second, environmentVarsArray, 4000, sessionClient);

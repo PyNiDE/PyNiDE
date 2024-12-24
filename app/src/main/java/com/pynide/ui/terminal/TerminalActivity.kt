@@ -26,7 +26,7 @@ import com.blankj.utilcode.util.IntentUtils
 import com.google.android.material.color.MaterialColors
 
 import com.pynide.R
-import com.pynide.app.IDEActivity
+import com.pynide.app.BaseActivity
 import com.pynide.databinding.ActivityTerminalBinding
 import com.pynide.terminal.TerminalHelper
 import com.pynide.terminal.TerminalService
@@ -42,7 +42,7 @@ import com.termux.terminal.TextStyle
 
 import java.util.Properties
 
-class TerminalActivity : IDEActivity(), ServiceConnection {
+class TerminalActivity : BaseActivity(), ServiceConnection {
     private lateinit var binding: ActivityTerminalBinding
     private val divider get() = binding.divider
     private val progressBar get() = binding.progressBar
@@ -91,8 +91,7 @@ class TerminalActivity : IDEActivity(), ServiceConnection {
     override fun onServiceConnected(componentName: ComponentName?, service: IBinder) {
         terminalService = (service as TerminalService.ServiceBinder).service
         terminalService!!.setSessionClient(terminalSessionClient!!)
-        val createdSession = terminalService!!.createSession(null, null, null)
-        setCurrentSession(createdSession)
+        setCurrentSession(terminalService!!.createSession())
         progressBar.hide()
     }
 

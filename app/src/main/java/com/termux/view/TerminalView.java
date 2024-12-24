@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
@@ -21,6 +22,7 @@ import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -39,10 +41,14 @@ import androidx.annotation.RequiresApi;
 
 import com.google.android.material.color.MaterialColors;
 
+import com.pynide.utils.FileLog;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.textselection.TextSelectionCursorController;
+
+import org.telegram.ui.ActionBar.FloatingActionMode;
+import org.telegram.ui.ActionBar.FloatingToolbar;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
@@ -274,7 +280,6 @@ public final class TerminalView extends View {
             setDefaultFocusHighlightEnabled(false);
         }
         setWillNotDraw(false);
-        setVerticalScrollBarEnabled(true);
     }
 
     /**
@@ -1041,14 +1046,89 @@ public final class TerminalView extends View {
         }
     }
 
+    private FloatingToolbar floatingToolbar;
+    public FloatingActionMode floatingActionMode;
+    private ViewTreeObserver.OnPreDrawListener floatingToolbarPreDrawListener;
+    private View attachedToWindow;
+
+    private class ActionModeCallback2Wrapper extends ActionMode.Callback2 {
+        private final ActionMode.Callback mWrapped;
+
+        public ActionModeCallback2Wrapper(ActionMode.Callback wrapped) {
+            mWrapped = wrapped;
+        }
+
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            return mWrapped.onCreateActionMode(mode, menu);
+        }
+
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return mWrapped.onPrepareActionMode(mode, menu);
+        }
+
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            return mWrapped.onActionItemClicked(mode, item);
+        }
+
+        public void onDestroyActionMode(ActionMode mode) {
+            mWrapped.onDestroyActionMode(mode);
+            cleanupFloatingActionModeViews();
+            floatingActionMode = null;
+        }
+
+        @Override
+        public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+            if (mWrapped instanceof ActionMode.Callback2) {
+                ((ActionMode.Callback2) mWrapped).onGetContentRect(mode, view, outRect);
+            } else {
+                super.onGetContentRect(mode, view, outRect);
+            }
+        }
+    }
+
+    private void cleanupFloatingActionModeViews() {
+        if (floatingToolbar != null) {
+            floatingToolbar.dismiss();
+            floatingToolbar = null;
+        }
+        if (floatingToolbarPreDrawListener != null) {
+            getViewTreeObserver().removeOnPreDrawListener(floatingToolbarPreDrawListener);
+            floatingToolbarPreDrawListener = null;
+        }
+    }
+
     @Override
     public ActionMode startActionMode(ActionMode.Callback callback) {
-        return super.startActionMode(callback);
+        if (attachedToWindow != null) {
+            if (floatingActionMode != null) {
+                floatingActionMode.finish();
+            }
+            cleanupFloatingActionModeViews();
+            floatingToolbar = new FloatingToolbar(getContext(), attachedToWindow);
+            floatingActionMode = new FloatingActionMode(getContext(), new ActionModeCallback2Wrapper(callback), this, floatingToolbar);
+            floatingToolbarPreDrawListener = () -> {
+                if (floatingActionMode != null) {
+                    floatingActionMode.updateViewLocationInWindow();
+                }
+                return true;
+            };
+            callback.onCreateActionMode(floatingActionMode, floatingActionMode.getMenu());
+            floatingActionMode.invalidate();
+            getViewTreeObserver().addOnPreDrawListener(floatingToolbarPreDrawListener);
+            invalidate();
+            return floatingActionMode;
+        } else {
+            return super.startActionMode(callback);
+        }
     }
 
     @Override
     public ActionMode startActionMode(ActionMode.Callback callback, int type) {
-        return super.startActionMode(callback, type);
+        if (attachedToWindow != null) {
+            return startActionMode(callback);
+        } else {
+            return super.startActionMode(callback, type);
+        }
     }
 
     public TerminalSession getCurrentSession() {
@@ -1460,7 +1540,12 @@ public final class TerminalView extends View {
 
     @Override
     protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
+        try {
+            super.onAttachedToWindow();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        attachedToWindow = getRootView();
 
         if (mTextSelectionCursorController != null) {
             getViewTreeObserver().addOnTouchModeChangeListener(mTextSelectionCursorController);
@@ -1470,6 +1555,7 @@ public final class TerminalView extends View {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        attachedToWindow = null;
 
         if (mTextSelectionCursorController != null) {
             // Might solve the following exception

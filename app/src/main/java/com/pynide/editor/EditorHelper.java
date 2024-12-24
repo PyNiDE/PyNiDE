@@ -4,32 +4,32 @@ import androidx.annotation.NonNull;
 
 import com.blankj.utilcode.util.Utils;
 
-import com.pynide.utils.Utilities;
+import com.pynide.model.AssetFile;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class EditorHelper {
     public static final String ASSETS_FONT_PREFIX = "fonts/";
 
-    private static final Map<String, String> fontsCache = new LinkedHashMap<>();
+    private static List<AssetFile> assetFonts = null;
 
     @NonNull
-    public static Map<String, String> getFonts() throws IOException {
-        synchronized (fontsCache) {
-            if (fontsCache.isEmpty()) {
-                final var tempArray = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_FONT_PREFIX)).filter(s -> s.endsWith(".ttf"));
-                tempArray.forEach(name -> {
-                    var temp = name.replace('-', ' ');
-                    final var dotIndex = temp.lastIndexOf('.');
-                    if (dotIndex != -1) temp = temp.substring(0, dotIndex);
-                    final var displayName = Utilities.capitalize(temp);
-                    fontsCache.put(displayName, name);
-                });
+    public static List<AssetFile> getAssetFonts() {
+        if (assetFonts == null) {
+            try {
+                assetFonts = Arrays.stream(Utils.getApp().getAssets().list(ASSETS_FONT_PREFIX))
+                        .filter(s -> s.endsWith(".ttf"))
+                        .map(AssetFile::new)
+                        .sorted(Comparator.comparing(s -> s.displayName))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load fonts from assets because " + e.getMessage());
             }
-            return fontsCache;
         }
+        return assetFonts;
     }
 }

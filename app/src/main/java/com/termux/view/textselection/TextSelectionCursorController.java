@@ -124,6 +124,7 @@ public class TextSelectionCursorController implements CursorController {
 
                 menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.more)
                         .setIcon(R.drawable.ic_more_vert)
+                        .setEnabled(false)
                         .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
                 return true;
             }

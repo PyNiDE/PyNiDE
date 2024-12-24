@@ -142,11 +142,9 @@ class TerminalService : Service() {
     }
 
     @Synchronized
-    fun createSession(
-        executable: File?, workingDirectory: File?, arguments: List<String>?
-    ): TerminalSession {
+    fun createSession(): TerminalSession {
         val newSession =
-            TerminalHelper.createSession(executable, workingDirectory, arguments, sessionClient)
+            TerminalHelper.createSession(null, null, null, sessionClient)
         terminalSessions.add(newSession)
         // TODO Notify sessions updated
         return newSession

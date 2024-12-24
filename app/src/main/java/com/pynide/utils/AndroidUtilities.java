@@ -37,17 +37,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import kotlin.collections.MapsKt;
 
 public class AndroidUtilities {
     private static final byte[] ELF_MAGIC = {0x7F, 'E', 'L', 'F'};
     private static final char SHEBANG_START = '#';
     private static final char SHEBANG_DELIMITER = '!';
+
+    private static Map<String, String> environmentVars = null;
 
     private static final Hashtable<String, Typeface> typefaceCache = new Hashtable<>();
 
@@ -118,8 +118,8 @@ public class AndroidUtilities {
             final var icon = item.getIcon();
             if (icon instanceof InsetDrawable) return;
             if (icon != null && item.requiresOverflow()) {
-                final var iconPadding = SizeUtils.dp2px(8f);
-                item.setIcon(new InsetDrawable(icon, iconPadding, 0, iconPadding, 0));
+                final var iconMarginPx = SizeUtils.dp2px(8f);
+                item.setIcon(new InsetDrawable(icon, iconMarginPx, 0, iconMarginPx, 0));
             }
         }
     }
@@ -178,7 +178,7 @@ public class AndroidUtilities {
         try (final var inputStream = new FileInputStream(executable)) {
             final var buffer = new byte[256];
             final var bytesRead = inputStream.read(buffer);
-            if (bytesRead <= 0) {
+            if (bytesRead <= 4) {
                 return null;
             }
 
@@ -223,7 +223,7 @@ public class AndroidUtilities {
         final String actualElf;
         if (DeviceUtils.getSDKVersionCode() >= 29 && elf.startsWith(TerminalVars.FILES_PATH)) {
             actualElf = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
-            actualArguments.add(actualElf);
+            actualArguments.add(elf);
         } else {
             actualElf = elf;
         }
@@ -248,7 +248,7 @@ public class AndroidUtilities {
         final String actualElf;
         if (DeviceUtils.getSDKVersionCode() >= 29 && elf.startsWith(TerminalVars.FILES_PATH)) {
             actualElf = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
-            ArrayUtils.add(actualArgumentsArray, actualElf);
+            ArrayUtils.add(actualArgumentsArray, elf);
         } else {
             actualElf = elf;
         }
@@ -262,61 +262,62 @@ public class AndroidUtilities {
     }
 
     @NonNull
-    public static Map<String, String> createEnvironmentVars() {
-        final var environmentVars = new HashMap<String, String>();
-        var temp = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
+    public static Map<String, String> getEnvironmentVars() {
+        if (environmentVars == null) {
+            environmentVars = new LinkedHashMap<>();
+            var temp = String.format("%s/tmp", TerminalVars.PREFIX_PATH);
 
-        FileUtils.createOrExistsDir(TerminalVars.FILES_PATH);
-        FileUtils.createOrExistsDir(TerminalVars.HOME_PATH);
-        FileUtils.createOrExistsDir(TerminalVars.PREFIX_PATH);
-        FileUtils.createOrExistsDir(temp);
+            FileUtils.createOrExistsDir(TerminalVars.FILES_PATH);
+            FileUtils.createOrExistsDir(TerminalVars.HOME_PATH);
+            FileUtils.createOrExistsDir(TerminalVars.PREFIX_PATH);
+            FileUtils.createOrExistsDir(temp);
 
-        environmentVars.put("HOME", TerminalVars.HOME_PATH);
-        environmentVars.put("PREFIX", TerminalVars.PREFIX_PATH);
-        environmentVars.put("TMPDIR", temp);
-        environmentVars.put("TMP", temp);
-        environmentVars.put("TERM", "xterm-256color");
-        environmentVars.put("COLORTERM", "truecolor");
-        environmentVars.put("LANG", "en_US.UTF-8");
+            environmentVars.put("HOME", TerminalVars.HOME_PATH);
+            environmentVars.put("PREFIX", TerminalVars.PREFIX_PATH);
+            environmentVars.put("TMPDIR", temp);
+            environmentVars.put("TMP", temp);
+            environmentVars.put("TERM", "xterm-256color");
+            environmentVars.put("COLORTERM", "truecolor");
+            environmentVars.put("LANG", "en_US.UTF-8");
 
-        temp = String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
-        if (FileUtils.isFileExists(temp)) {
-            environmentVars.put("SHELL", temp);
-        } else {
-            environmentVars.put("SHELL", "/system/bin/sh");
-        }
+            temp = String.format("%s/bin/sh", TerminalVars.PREFIX_PATH);
+            if (FileUtils.isFileExists(temp)) {
+                environmentVars.put("SHELL", temp);
+            } else {
+                environmentVars.put("SHELL", "/system/bin/sh");
+            }
 
-        environmentVars.put("IDE_NAME", Utils.getApp().getString(R.string.app_name));
-        environmentVars.put("IDE_DEBUG", String.valueOf(BuildVars.DEBUG_VERSION));
-        environmentVars.put("IDE_VERSION", String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE));
-        environmentVars.put("IDE_PACKAGE", BuildVars.PACKAGE_NAME);
+            environmentVars.put("IDE_NAME", Utils.getApp().getString(R.string.app_name));
+            environmentVars.put("IDE_DEBUG", String.valueOf(BuildVars.DEBUG_VERSION));
+            environmentVars.put("IDE_VERSION", String.format("%s (%s)", BuildVars.VERSION_NAME, BuildVars.VERSION_CODE));
+            environmentVars.put("IDE_PACKAGE", BuildVars.PACKAGE_NAME);
 
-        temp = System.getenv("PATH");
-        temp = String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp);
-        environmentVars.put("PATH", temp);
+            temp = System.getenv("PATH");
+            environmentVars.put("PATH", String.format("%s/bin:%s", TerminalVars.PREFIX_PATH, temp));
 
-        temp = System.getenv("LD_LIBRARY_PATH");
-        if (temp == null) {
-            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib", TerminalVars.PREFIX_PATH));
-        } else {
-            environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp));
-        }
+            temp = System.getenv("LD_LIBRARY_PATH");
+            if (temp == null) {
+                environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib", TerminalVars.PREFIX_PATH));
+            } else {
+                environmentVars.put("LD_LIBRARY_PATH", String.format("%s/lib:%s", TerminalVars.PREFIX_PATH, temp));
+            }
 
-        temp = String.format("%s/lib/terminal-exec.so", TerminalVars.PREFIX_PATH);
-        if (FileUtils.isFileExists(temp)) {
-            environmentVars.put("LD_PRELOAD", temp);
+            temp = String.format("%s/lib/terminal-exec.so", TerminalVars.PREFIX_PATH);
+            if (FileUtils.isFileExists(temp)) {
+                environmentVars.put("LD_PRELOAD", temp);
 
-            if (DeviceUtils.getSDKVersionCode() >= 29) {
-                environmentVars.put("BASEDIR", TerminalVars.FILES_PATH);
-                environmentVars.put("PROC_64BIT", String.valueOf(android.os.Process.is64Bit()));
+                if (DeviceUtils.getSDKVersionCode() >= 29) {
+                    environmentVars.put("BASEDIR", TerminalVars.FILES_PATH);
+                    environmentVars.put("PROC_64BIT", String.valueOf(android.os.Process.is64Bit()));
+                }
             }
         }
-        return MapsKt.toSortedMap(environmentVars);
+        return environmentVars;
     }
 
     @NonNull
-    public static String[] createEnvironmentVarsArray() {
-        final var environmentVars = createEnvironmentVars();
+    public static String[] getEnvironmentVarsArray() {
+        final var environmentVars = getEnvironmentVars();
         final var environmentVarsList = new ArrayList<String>(environmentVars.size());
         environmentVars.forEach((key, value) -> environmentVarsList.add(key + "=" + value));
         Collections.sort(environmentVarsList);

@@ -1,0 +1,40 @@
+<resources>
+
+    <style name="Base.Theme.PyNiDE.Light" parent="Theme.Material3.Light.PyNiDE">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="appColorPrimary">@color/app_color_light</item>
+    </style>
+
+    <style name="Base.Theme.PyNiDE.Dark" parent="Theme.Material3.Dark.PyNiDE">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="appColorPrimary">@color/app_color_dark</item>
+    </style>
+
+    <style name="Base.Theme.PyNiDE" parent="Base.Theme.PyNiDE.Light" />
+
+    <style name="Platform.V24.Theme.PyNiDE" parent="Base.Theme.PyNiDE">
+        <item name="android:colorBackground">?colorSurface</item>
+        <item name="android:windowBackground">?colorSurface</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowLightStatusBar">?isLightTheme</item>
+    </style>
+
+    <style name="Platform.Theme.PyNiDE" parent="Platform.V24.Theme.PyNiDE" />
+
+    <style name="Theme.PyNiDE" parent="Platform.Theme.PyNiDE">
+        <item name="android:fontFamily">@font/opensans_medium</item>
+        <item name="fontFamily">@font/opensans_medium</item>
+        <item name="toolbarStyle">@style/Widget.PyNiDE.Toolbar</item>
+    </style>
+
+    <style name="Theme.PyNiDE.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.PyNiDE</item>
+    </style>
+</resources>

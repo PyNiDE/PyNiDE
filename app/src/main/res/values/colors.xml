@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_color_light">#3F51B5</color>
+    <color name="app_color_dark">#9FA8DA</color>
+
+    <color name="launcher_logo">@android:color/white</color>
+    <color name="launcher_background">@color/app_color_light</color>
+
+    <color name="splash_logo">@color/app_color_light</color>
+    <color name="splash_background">@color/md_theme_py_ni_d_e_light_surface</color>
+</resources>

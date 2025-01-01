@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="PreferenceThemeOverlay.PyNiDE" parent="PreferenceThemeOverlay.Rikka.Material3">
+        <item name="preferenceCategoryStyle">@style/Preference.PyNiDE.Category</item>
+        <item name="simpleMenuPreferenceStyle">@style/Preference.PyNiDE.SimpleMenuPreference</item>
+    </style>
+
+    <style name="Preference.PyNiDE.Category" parent="Preference.Rikka.Category.Material3">
+        <item name="android:layout">@layout/preference_category</item>
+    </style>
+
+    <style name="Preference.PyNiDE.SimpleMenuPreference" parent="Preference.Rikka.SimpleMenuPreference.Material3">
+        <item name="android:popupTheme">@style/ThemeOverlay.PyNiDE.SimpleMenuPreference.PopupMenu
+        </item>
+    </style>
+
+    <style name="Widget.PyNiDE.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.PyNiDE.TitleLarge</item>
+    </style>
+
+    <style name="TextAppearance.PyNiDE.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/opensans_semibold</item>
+        <item name="fontFamily">@font/opensans_semibold</item>
+    </style>
+</resources>

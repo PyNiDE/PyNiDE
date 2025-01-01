@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_reset"
+        android:icon="@drawable/ic_restart_alt"
+        android:title="@string/reset"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_share_transcript"
+        android:icon="@drawable/ic_share"
+        android:title="@string/share_transcript"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_toggle_autoscroll"
+        android:icon="@drawable/ic_arrow_downward"
+        android:title="@string/toggle_autoscroll"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_paste"
+        android:icon="@drawable/ic_paste"
+        android:title="@android:string/paste"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_select_url"
+        android:icon="@drawable/ic_link"
+        android:title="@string/select_url"
+        app:showAsAction="never" />
+</menu>

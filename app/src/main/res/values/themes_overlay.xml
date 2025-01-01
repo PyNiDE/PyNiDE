@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ThemeOverlay.PyNiDE.Normal" parent="" />
+
+    <style name="ThemeOverlay.PyNiDE.Black" parent="">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="colorSurface">@android:color/black</item>
+        <item name="colorSurfaceContainer">?colorSurfaceContainerLowest</item>
+        <item name="colorSurfaceContainerHigh">?colorSurfaceContainerLowest</item>
+        <item name="colorSurfaceContainerHighest">?colorSurfaceContainerLowest</item>
+        <item name="colorSurfaceContainerLow">?colorSurfaceContainerLowest</item>
+    </style>
+
+    <style name="ThemeOverlay.PyNiDE.DynamicColors.Light" parent="ThemeOverlay.Material3.DynamicColors.Light" />
+
+    <style name="ThemeOverlay.PyNiDE.DynamicColors.Dark" parent="ThemeOverlay.Material3.DynamicColors.Dark" />
+
+    <style name="ThemeOverlay.PyNiDE.DynamicColors" parent="ThemeOverlay.PyNiDE.DynamicColors.Light" />
+
+    <style name="ThemeOverlay.PyNiDE.Preference" parent="ThemeOverlay.Rikka.Material3.Preference">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.PyNiDE</item>
+    </style>
+
+    <style name="ThemeOverlay.PyNiDE.SimpleMenuPreference.PopupMenu" parent="ThemeOverlay.Preference.SimpleMenuPreference.PopupMenu" />
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">PyNiDE</string>
+
+    <string name="terminal_service_special_use_property" translatable="false">As a Linux environment IDE needs to ensure that running tasks are not killed or paused while the app is in the background.
+                For example, a user might start a web server that serves HTML pages and then interact with that from the browser app while the IDE
+                app is in the background. If the system were to interrupt or defer the IDE app while it is in the background the user
+                experience would be negatively affected since the above described use case would be broken.</string>
+    <string name="terminal_session_is_running" translatable="false">Terminal session is running</string>
+    <string name="tap_close_to_stop" translatable="false">Tap \"close\" to stop.</string>
+</resources>

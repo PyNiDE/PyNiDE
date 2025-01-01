@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        app:key="general"
+        app:title="@string/general">
+
+        <rikka.preference.IntegerSimpleMenuPreference
+            app:entries="@array/night_mode"
+            app:entryValues="@array/night_mode_value"
+            app:icon="@drawable/ic_format_paint"
+            app:key="night_mode"
+            app:summary="%s"
+            app:title="@string/theme" />
+
+        <rikka.material.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_invert_colors"
+            app:key="black_night_theme"
+            app:summary="@string/black_night_theme_summary"
+            app:title="@string/black_night_theme" />
+
+        <rikka.material.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_palette"
+            app:key="dynamic_colors"
+            app:summary="@string/dynamic_colors_summary"
+            app:title="@string/dynamic_colors" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="terminal"
+        app:title="@string/terminal">
+
+        <rikka.material.preference.MaterialSwitchPreference
+            app:iconSpaceReserved="true"
+            app:key="terminal_keep_screen_on"
+            app:title="@string/keep_screen_on" />
+
+        <rikka.preference.IntegerSimpleMenuPreference
+            app:defaultValue="14"
+            app:entries="@array/terminal_text_size"
+            app:entryValues="@array/terminal_text_size_value"
+            app:icon="@drawable/ic_format_size"
+            app:key="terminal_font_size"
+            app:summary="%s"
+            app:title="@string/font_size" />
+
+        <rikka.preference.SimpleMenuPreference
+            app:defaultValue="reddit.ttf"
+            app:icon="@drawable/ic_font_download"
+            app:key="terminal_font_style"
+            app:summary="%s"
+            app:title="@string/font_style" />
+
+        <rikka.preference.SimpleMenuPreference
+            app:defaultValue="DYNAMIC"
+            app:icon="@drawable/ic_palette"
+            app:key="terminal_color_scheme"
+            app:summary="%s"
+            app:title="@string/color_scheme" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="about"
+        app:title="@string/about">
+
+        <Preference
+            app:icon="@drawable/ic_info"
+            app:key="about_version"
+            app:persistent="false"
+            app:selectable="false"
+            app:summary="%s"
+            app:title="@string/version" />
+
+        <Preference
+            app:icon="@drawable/ic_github"
+            app:iconSpaceReserved="true"
+            app:key="about_github"
+            app:persistent="false"
+            app:title="@string/github" />
+
+        <Preference
+            app:icon="@drawable/ic_license"
+            app:key="about_oss_licenses"
+            app:persistent="false"
+            app:title="@string/oss_licenses" />
+
+        <Preference
+            app:icon="@drawable/ic_policy"
+            app:key="about_privacy_policy"
+            app:persistent="false"
+            app:title="@string/privacy_policy" />
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="floating_toolbar_open_overflow_description">More options</string>
+    <string name="floating_toolbar_close_overflow_description">Close overflow</string>
+</resources>

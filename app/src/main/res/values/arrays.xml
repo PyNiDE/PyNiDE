@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="night_mode">
+        <item>@string/follow_system</item>
+        <item>@string/day</item>
+        <item>@string/night</item>
+    </string-array>
+
+    <integer-array name="night_mode_value">
+        <item>-1</item>
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
+    <string-array name="terminal_text_size">
+        <item>@string/ten_sp</item>
+        <item>@string/twelve_sp</item>
+        <item>@string/fourteen_sp</item>
+        <item>@string/sixteen_sp</item>
+        <item>@string/eighteen_sp</item>
+        <item>@string/twenty_sp</item>
+        <item>@string/twenty_two_sp</item>
+        <item>@string/twenty_four_sp</item>
+    </string-array>
+
+    <integer-array name="terminal_text_size_value">
+        <item>10</item>
+        <item>12</item>
+        <item>14</item>
+        <item>16</item>
+        <item>18</item>
+        <item>20</item>
+        <item>22</item>
+        <item>24</item>
+    </integer-array>
+</resources>
